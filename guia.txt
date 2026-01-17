@@ -1,0 +1,8 @@
+/cmd/api       <- Main e entrypoint
+/internal/
+    /models    <- Structs (Entidades)
+    /repository <- SQL e Acesso ao Banco
+    /services   <- Regras de Negócio
+    /controllers <- Handlers HTTP
+    /config     <- Variáveis de ambiente
+    /db         <- Conexão com Banco

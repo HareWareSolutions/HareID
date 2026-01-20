@@ -20,23 +20,20 @@ type Repository struct {
 	Teams interface {
 		Create(ctx context.Context, tx pgx.Tx, team models.Team) (models.Team, error)
 		GetAll(ctx context.Context, tx pgx.Tx) ([]models.Team, error)
-		GetTeamByID(ctx context.Context, tx pgx.Tx, teamID uint64) (models.Team, error)
+		GetByID(ctx context.Context, tx pgx.Tx, teamID uint64) (models.Team, error)
 		SearchByOwnerID(ctx context.Context, tx pgx.Tx, userID uint64) (models.Team, error)
 		Update(ctx context.Context, tx pgx.Tx, teamID uint64, team models.Team) (uint64, error)
 		Delete(ctx context.Context, tx pgx.Tx, teamID uint64) (uint64, error)
 	}
-	Members interface {
+	TeamMembers interface {
 		Create(ctx context.Context, tx pgx.Tx, teamMember models.TeamMember) (models.TeamMember, error)
 		GetTeamMembers(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.TeamMember, error)
 		GetTeamMemberByUserID(ctx context.Context, tx pgx.Tx, userID uint64) (models.TeamMember, error)
-		Update(ctx context.Context, tx pgx.Tx, teamMemberID uint64, teamMember models.TeamMember) (uint64, error)
-		Delete(ctx context.Context, tx pgx.Tx, teamMemberID uint64) (uint64, error)
 	}
 	JoinRequests interface {
 		Create(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.JoinRequest, error)
-		GetJoinRequest(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error)
-		GetJoinRequestByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error)
-		Update(ctx context.Context, tx pgx.Tx, joinRequestID uint64, joinRequest models.JoinRequest) (uint64, error)
+		GetAll(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error)
+		GetByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error)
 		Delete(ctx context.Context, tx pgx.Tx, requestID, teamID uint64) (uint64, error)
 		Accept(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error)
 		Reject(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error)
@@ -53,7 +50,7 @@ func NewRepository(db *pgxpool.Pool) Repository {
 	return Repository{
 		Users:         &UserRepository{db: db},
 		Teams:         &TeamsRepository{db: db},
-		Members:       &TeamMembersRepository{db: db},
+		TeamMembers:   &TeamMembersRepository{db: db},
 		JoinRequests:  &JoinRequestRepository{db: db},
 		Notifications: &NotificationRepository{db: db},
 	}

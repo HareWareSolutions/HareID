@@ -68,7 +68,7 @@ func (repository *TeamsRepository) GetAll(ctx context.Context, tx pgx.Tx) ([]mod
 	return teams, nil
 }
 
-func (repository *TeamsRepository) GetTeamByID(ctx context.Context, tx pgx.Tx, teamID uint64) (models.Team, error) {
+func (repository *TeamsRepository) GetByID(ctx context.Context, tx pgx.Tx, teamID uint64) (models.Team, error) {
 
 	query := `
 		SELECT id, name, domain, owner_id, created_at, updated_at

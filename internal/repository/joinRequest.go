@@ -37,7 +37,7 @@ func (repository *JoinRequestRepository) Create(ctx context.Context, tx pgx.Tx, 
 	return joinRequest, nil
 }
 
-func (repository *JoinRequestRepository) GetJoinRequest(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error) {
+func (repository *JoinRequestRepository) GetAll(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -74,7 +74,7 @@ func (repository *JoinRequestRepository) GetJoinRequest(ctx context.Context, tx 
 	return requests, nil
 }
 
-func (repository *JoinRequestRepository) GetJoinRequestByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error) {
+func (repository *JoinRequestRepository) GetByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -156,25 +156,6 @@ func (repository *JoinRequestRepository) Reject(ctx context.Context, tx pgx.Tx, 
 
 	if result.RowsAffected() == 0 {
 		return 0, errors.New("no request accepted")
-	}
-
-	return uint64(result.RowsAffected()), nil
-}
-
-func (repository *JoinRequestRepository) Update(ctx context.Context, tx pgx.Tx, joinRequestID uint64, joinRequest models.JoinRequest) (uint64, error) {
-	query := `
-		UPDATE teamjoinrequests
-		SET status = $1
-		WHERE id = $2
-	`
-
-	result, err := tx.Exec(ctx, query, joinRequest.Status, joinRequestID)
-	if err != nil {
-		return 0, err
-	}
-
-	if result.RowsAffected() == 0 {
-		return 0, errors.New("no join request updated")
 	}
 
 	return uint64(result.RowsAffected()), nil

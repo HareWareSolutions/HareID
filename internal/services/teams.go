@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,13 +16,9 @@ type Teams struct {
 	db   *pgxpool.Pool
 }
 
-func NewTeamService(db *pgxpool.Pool) *Teams {
-	return &Teams{db: db}
-}
+func (s *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error) {
 
-func (ts *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error) {
-
-	tx, err := ts.db.Begin(ctx)
+	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return models.Team{}, models.TeamMember{}, err
 	}
@@ -33,14 +30,10 @@ func (ts *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team mode
 		return models.Team{}, models.TeamMember{}, err
 	}
 
-	t := repository.NewTeamsRepository()
-
-	team, err = t.Create(ctx, tx, team)
+	team, err = s.repo.Teams.Create(ctx, tx, team)
 	if err != nil {
 		return models.Team{}, models.TeamMember{}, err
 	}
-
-	tmRepository := repository.NewTeamMembersRepository()
 
 	teamMember := models.TeamMember{
 		TeamID: team.ID,
@@ -48,7 +41,7 @@ func (ts *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team mode
 		Role:   enums.OWNER,
 	}
 
-	teamMember, err = tmRepository.Create(ctx, tx, teamMember)
+	teamMember, err = s.repo.TeamMembers.Create(ctx, tx, teamMember)
 	if err != nil {
 		return models.Team{}, models.TeamMember{}, err
 	}
@@ -60,27 +53,35 @@ func (ts *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team mode
 	return team, models.TeamMember{}, nil
 }
 
-func (ts *Teams) GetTeam(ctx context.Context) ([]models.Team, error) {
+func (s *Teams) GetAll(ctx context.Context) ([]models.Team, error) {
 
-	repository := repository.NewTeamsRepository()
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
 
-	teams, err := repository.GetAll(ctx, ts.db)
+	teams, err := s.repo.Teams.GetAll(ctx, tx)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(teams) < 1 {
-		return nil, errors.New("no teams found")
+		return nil, errors.New("no team found")
 	}
 
 	return teams, nil
 }
 
-func (ts *Teams) GetTeamByID(ctx context.Context, teamID uint64) (models.Team, error) {
+func (ts *Teams) GetByID(ctx context.Context, teamID uint64) (models.Team, error) {
 
-	repository := repository.NewTeamsRepository()
+	tx, err := ts.db.Begin(ctx)
+	if err != nil {
+		return models.Team{}, err
+	}
+	defer tx.Rollback(ctx)
 
-	team, err := repository.GetTeamByID(ctx, ts.db, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
 	if err != nil {
 		return models.Team{}, err
 	}
@@ -100,9 +101,7 @@ func (ts *Teams) UpdateTeam(ctx context.Context, requestUserID, teamID uint64, t
 		return 0, err
 	}
 
-	repository := repository.NewTeamsRepository()
-
-	affectedRows, err := repository.Update(ctx, tx, teamID, team)
+	affectedRows, err := ts.repo.Teams.Update(ctx, tx, teamID, team)
 	if err != nil {
 		return 0, err
 	}
@@ -122,13 +121,11 @@ func (ts *Teams) DeleteTeam(ctx context.Context, requestUserID, teamID uint64) (
 	}
 	defer tx.Rollback(ctx)
 
-	if err := ts.CompareUserIDWithTeamOwnerID(ctx, requestUserID, teamID); err != nil {
+	if err := ts.CompareUserIDWithTeamOwnerID(ctx, tx, requestUserID, teamID); err != nil {
 		return 0, err
 	}
 
-	repository := repository.NewTeamsRepository()
-
-	affectedRows, err := repository.Delete(ctx, tx, teamID)
+	affectedRows, err := ts.repo.Teams.Delete(ctx, tx, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -142,9 +139,13 @@ func (ts *Teams) DeleteTeam(ctx context.Context, requestUserID, teamID uint64) (
 
 func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, error) {
 
-	repository := repository.NewTeamsRepository()
+	tx, err := ts.db.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(ctx)
 
-	team, err := repository.GetTeamByID(ctx, ts.db, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -152,11 +153,9 @@ func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, err
 	return team.OwnerID, nil
 }
 
-func (ts *Teams) CompareUserIDWithTeamOwnerID(ctx context.Context, userID, teamID uint64) error {
+func (ts *Teams) CompareUserIDWithTeamOwnerID(ctx context.Context, tx pgx.Tx, userID, teamID uint64) error {
 
-	repository := repository.NewTeamsRepository()
-
-	team, err := repository.GetTeamByID(ctx, ts.db, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
 	if err != nil {
 		return err
 	}

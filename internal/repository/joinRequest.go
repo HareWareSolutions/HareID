@@ -6,16 +6,14 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type TeamJoinRequest struct {
+type JoinRequestRepository struct {
+	db *pgxpool.Pool
 }
 
-func NewTeamJoinRequestRepository() *TeamJoinRequest {
-	return &TeamJoinRequest{}
-}
-
-func (repository *TeamJoinRequest) Create(ctx context.Context, db DBTX, joinRequest models.JoinRequest) (models.JoinRequest, error) {
+func (repository *JoinRequestRepository) Create(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.JoinRequest, error) {
 
 	query := `
 		INSERT INTO teamjoinrequests (team_id, team_owner_id, sender_id, status)
@@ -23,7 +21,7 @@ func (repository *TeamJoinRequest) Create(ctx context.Context, db DBTX, joinRequ
 		RETURNING id
 	`
 
-	if err := db.QueryRow(
+	if err := tx.QueryRow(
 		ctx,
 		query,
 		joinRequest.TeamID,
@@ -39,7 +37,7 @@ func (repository *TeamJoinRequest) Create(ctx context.Context, db DBTX, joinRequ
 	return joinRequest, nil
 }
 
-func (repository *TeamJoinRequest) GetJoinRequest(ctx context.Context, db DBTX, teamID uint64) ([]models.JoinRequest, error) {
+func (repository *JoinRequestRepository) GetJoinRequest(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -47,7 +45,7 @@ func (repository *TeamJoinRequest) GetJoinRequest(ctx context.Context, db DBTX, 
 		WHERE team_id = $1
 	`
 
-	rows, err := db.Query(ctx, query, teamID)
+	rows, err := tx.Query(ctx, query, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +74,7 @@ func (repository *TeamJoinRequest) GetJoinRequest(ctx context.Context, db DBTX, 
 	return requests, nil
 }
 
-func (repository *TeamJoinRequest) GetJoinRequestByID(ctx context.Context, db DBTX, joinRequestID, teamID uint64) (models.JoinRequest, error) {
+func (repository *JoinRequestRepository) GetJoinRequestByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -86,7 +84,7 @@ func (repository *TeamJoinRequest) GetJoinRequestByID(ctx context.Context, db DB
 
 	var request models.JoinRequest
 
-	if err := db.QueryRow(
+	if err := tx.QueryRow(
 		ctx,
 		query,
 		joinRequestID,
@@ -109,14 +107,14 @@ func (repository *TeamJoinRequest) GetJoinRequestByID(ctx context.Context, db DB
 	return request, nil
 }
 
-func (repository *TeamJoinRequest) Delete(ctx context.Context, db DBTX, requestID, teamID uint64) (uint64, error) {
+func (repository *JoinRequestRepository) Delete(ctx context.Context, tx pgx.Tx, requestID, teamID uint64) (uint64, error) {
 
 	query := `
 		DELETE FROM teamjoinrequests
 		WHERE id = $1 AND team_id = $2
  	`
 
-	result, err := db.Exec(ctx, query, requestID, teamID)
+	result, err := tx.Exec(ctx, query, requestID, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -129,12 +127,12 @@ func (repository *TeamJoinRequest) Delete(ctx context.Context, db DBTX, requestI
 
 }
 
-func (repository *TeamJoinRequest) Accept(ctx context.Context, db DBTX, userID, teamID, joinRequestID uint64) (uint64, error) {
+func (repository *JoinRequestRepository) Accept(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
 	query := `
 		UPDATE teamjoinrequests SET status = 1, decision_at = NOW(), decision_by = $1 WHERE id = $2 AND team_id = $3
 	`
 
-	result, err := db.Exec(ctx, query, userID, joinRequestID, teamID)
+	result, err := tx.Exec(ctx, query, userID, joinRequestID, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -146,18 +144,37 @@ func (repository *TeamJoinRequest) Accept(ctx context.Context, db DBTX, userID, 
 	return uint64(result.RowsAffected()), nil
 }
 
-func (repository *TeamJoinRequest) Reject(ctx context.Context, db DBTX, userID, teamID, joinRequestID uint64) (uint64, error) {
+func (repository *JoinRequestRepository) Reject(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
 	query := `
 		UPDATE teamjoinrequests SET status = 2, decision_at = NOW(), decision_by = $1 WHERE id = $2 AND team_id = $3
 	`
 
-	result, err := db.Exec(ctx, query, userID, joinRequestID, teamID)
+	result, err := tx.Exec(ctx, query, userID, joinRequestID, teamID)
 	if err != nil {
 		return 0, err
 	}
 
 	if result.RowsAffected() == 0 {
 		return 0, errors.New("no request accepted")
+	}
+
+	return uint64(result.RowsAffected()), nil
+}
+
+func (repository *JoinRequestRepository) Update(ctx context.Context, tx pgx.Tx, joinRequestID uint64, joinRequest models.JoinRequest) (uint64, error) {
+	query := `
+		UPDATE teamjoinrequests
+		SET status = $1
+		WHERE id = $2
+	`
+
+	result, err := tx.Exec(ctx, query, joinRequest.Status, joinRequestID)
+	if err != nil {
+		return 0, err
+	}
+
+	if result.RowsAffected() == 0 {
+		return 0, errors.New("no join request updated")
 	}
 
 	return uint64(result.RowsAffected()), nil

@@ -14,7 +14,7 @@ type Team struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-func (team *Team) ValidadeTeam(step string) error {
+func (team *Team) ValidateTeam(step string) error {
 	if err := team.ValidateData(step); err != nil {
 		return err
 	}

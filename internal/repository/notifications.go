@@ -7,16 +7,14 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Notifications struct {
+type NotificationRepository struct {
+	db *pgxpool.Pool
 }
 
-func NewNotificationsRepository() *Notifications {
-	return &Notifications{}
-}
-
-func (repository *Notifications) CreateByJoinRequest(ctx context.Context, db DBTX, joinRequest models.JoinRequest) (models.Notification, error) {
+func (repository *NotificationRepository) CreateByJoinRequest(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.Notification, error) {
 
 	notification := models.Notification{
 		SenderID:    joinRequest.SenderID,
@@ -32,7 +30,7 @@ func (repository *Notifications) CreateByJoinRequest(ctx context.Context, db DBT
 		RETURNING id, created_at
 	`
 
-	if err := db.QueryRow(
+	if err := tx.QueryRow(
 		ctx,
 		query,
 		notification.SenderID,
@@ -50,7 +48,7 @@ func (repository *Notifications) CreateByJoinRequest(ctx context.Context, db DBT
 	return notification, nil
 }
 
-func (repository *Notifications) GetAll(ctx context.Context, db DBTX, userID uint64) ([]models.Notification, error) {
+func (repository *NotificationRepository) GetAll(ctx context.Context, tx pgx.Tx, userID uint64) ([]models.Notification, error) {
 
 	query := `
 		SELECT id, sender_id, receiver_id, type, reference_id, seen, created_at
@@ -58,7 +56,7 @@ func (repository *Notifications) GetAll(ctx context.Context, db DBTX, userID uin
 		WHERE receiver_id = $1
 	`
 
-	rows, err := db.Query(ctx, query, userID)
+	rows, err := tx.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +90,7 @@ func (repository *Notifications) GetAll(ctx context.Context, db DBTX, userID uin
 	return notifications, nil
 }
 
-func (repository *Notifications) GetByID(ctx context.Context, db DBTX, userID, notificationID uint64) (models.Notification, error) {
+func (repository *NotificationRepository) GetByID(ctx context.Context, tx pgx.Tx, userID, notificationID uint64) (models.Notification, error) {
 
 	query := `
 		SELECT id, sender_id, receiver_id, type, reference_id, seen, created_at
@@ -102,7 +100,7 @@ func (repository *Notifications) GetByID(ctx context.Context, db DBTX, userID, n
 
 	var notification models.Notification
 
-	if err := db.QueryRow(
+	if err := tx.QueryRow(
 		ctx,
 		query,
 		notificationID,
@@ -125,13 +123,13 @@ func (repository *Notifications) GetByID(ctx context.Context, db DBTX, userID, n
 	return notification, nil
 }
 
-func (repository *Notifications) Delete(ctx context.Context, db DBTX, userID, notificationID uint64) (uint64, error) {
+func (repository *NotificationRepository) Delete(ctx context.Context, tx pgx.Tx, userID, notificationID uint64) (uint64, error) {
 	query := `
 		DELETE FROM notifications
 		WHERE id = $1 AND receiver_id = $2
 	`
 
-	result, err := db.Exec(ctx, query, notificationID, userID)
+	result, err := tx.Exec(ctx, query, notificationID, userID)
 	if err != nil {
 		return 0, err
 	}

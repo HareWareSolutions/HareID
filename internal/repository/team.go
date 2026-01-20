@@ -6,16 +6,14 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Teams struct {
+type TeamsRepository struct {
+	db *pgxpool.Pool
 }
 
-func NewTeamsRepository() *Teams {
-	return &Teams{}
-}
-
-func (repository *Teams) Create(ctx context.Context, db DBTX, team models.Team) (models.Team, error) {
+func (repository *TeamsRepository) Create(ctx context.Context, tx pgx.Tx, team models.Team) (models.Team, error) {
 
 	query := `
 		INSERT INTO teams (name, domain, owner_id)
@@ -23,7 +21,7 @@ func (repository *Teams) Create(ctx context.Context, db DBTX, team models.Team) 
 		RETURNING id, name, domain, created_at
 	`
 
-	if err := db.QueryRow(ctx, query, team.Name, team.Domain, team.OwnerID).Scan(
+	if err := tx.QueryRow(ctx, query, team.Name, team.Domain, team.OwnerID).Scan(
 		&team.ID,
 		&team.Name,
 		&team.Domain,
@@ -35,14 +33,14 @@ func (repository *Teams) Create(ctx context.Context, db DBTX, team models.Team) 
 	return team, nil
 }
 
-func (repository *Teams) GetAll(ctx context.Context, db DBTX) ([]models.Team, error) {
+func (repository *TeamsRepository) GetAll(ctx context.Context, tx pgx.Tx) ([]models.Team, error) {
 
 	query := `
 		SELECT id, name, domain, owner_id, created_at, updated_at
 		FROM teams
 	`
 
-	rows, err := db.Query(ctx, query)
+	rows, err := tx.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +68,7 @@ func (repository *Teams) GetAll(ctx context.Context, db DBTX) ([]models.Team, er
 	return teams, nil
 }
 
-func (repository *Teams) GetByID(ctx context.Context, db DBTX, teamID uint64) (models.Team, error) {
+func (repository *TeamsRepository) GetTeamByID(ctx context.Context, tx pgx.Tx, teamID uint64) (models.Team, error) {
 
 	query := `
 		SELECT id, name, domain, owner_id, created_at, updated_at
@@ -80,7 +78,7 @@ func (repository *Teams) GetByID(ctx context.Context, db DBTX, teamID uint64) (m
 
 	var team models.Team
 
-	err := db.QueryRow(ctx, query, teamID).Scan(
+	err := tx.QueryRow(ctx, query, teamID).Scan(
 		&team.ID,
 		&team.Name,
 		&team.OwnerID,
@@ -97,7 +95,7 @@ func (repository *Teams) GetByID(ctx context.Context, db DBTX, teamID uint64) (m
 	return team, nil
 }
 
-func (repository *Teams) SearchByOwnerID(ctx context.Context, db DBTX, userID uint64) (models.Team, error) {
+func (repository *TeamsRepository) SearchByOwnerID(ctx context.Context, tx pgx.Tx, userID uint64) (models.Team, error) {
 
 	query := `
 		SELECT id, name, owner_id, created_at, updated_at
@@ -107,7 +105,7 @@ func (repository *Teams) SearchByOwnerID(ctx context.Context, db DBTX, userID ui
 
 	var team models.Team
 
-	err := db.QueryRow(ctx, query, userID).Scan(
+	err := tx.QueryRow(ctx, query, userID).Scan(
 		&team.ID,
 		&team.Name,
 		&team.OwnerID,
@@ -124,7 +122,7 @@ func (repository *Teams) SearchByOwnerID(ctx context.Context, db DBTX, userID ui
 	return team, nil
 }
 
-func (repository *Teams) Update(ctx context.Context, db DBTX, teamID uint64, team models.Team) (uint64, error) {
+func (repository *TeamsRepository) Update(ctx context.Context, tx pgx.Tx, teamID uint64, team models.Team) (uint64, error) {
 
 	query := `
 		UPDATE teams
@@ -132,7 +130,7 @@ func (repository *Teams) Update(ctx context.Context, db DBTX, teamID uint64, tea
 		WHERE id = $3
 	`
 
-	result, err := db.Exec(ctx, query, team.Name, team.Domain, teamID)
+	result, err := tx.Exec(ctx, query, team.Name, team.Domain, teamID)
 	if err != nil {
 		return 0, nil
 	}
@@ -144,14 +142,14 @@ func (repository *Teams) Update(ctx context.Context, db DBTX, teamID uint64, tea
 	return uint64(result.RowsAffected()), nil
 }
 
-func (repository *Teams) Delete(ctx context.Context, db DBTX, teamID uint64) (uint64, error) {
+func (repository *TeamsRepository) Delete(ctx context.Context, tx pgx.Tx, teamID uint64) (uint64, error) {
 
 	query := `
 		DELETE FROM teams
 		WHERE id = $1
 	`
 
-	result, err := db.Exec(ctx, query, teamID)
+	result, err := tx.Exec(ctx, query, teamID)
 	if err != nil {
 		return 0, nil
 	}

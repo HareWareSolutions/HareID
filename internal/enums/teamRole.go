@@ -4,6 +4,7 @@ type TeamRole int
 
 const (
 	UNKNOWN TeamRole = iota
+	OWNER
 	ADMIN
 	MANAGER
 	SALES_REP

@@ -13,7 +13,7 @@ type TeamMembersRepository struct {
 	db *pgxpool.Pool
 }
 
-func (tm *TeamMembersRepository) Create(ctx context.Context, tx pgx.Tx, teamMember models.TeamMember) (models.TeamMember, error) {
+func (r *TeamMembersRepository) Create(ctx context.Context, tx pgx.Tx, teamMember models.TeamMember) (models.TeamMember, error) {
 
 	query := `
 		INSERT INTO teammembers (role, team_id, user_id)
@@ -36,7 +36,7 @@ func (tm *TeamMembersRepository) Create(ctx context.Context, tx pgx.Tx, teamMemb
 
 }
 
-func (tm *TeamMembersRepository) GetTeamMembers(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.TeamMember, error) {
+func (r *TeamMembersRepository) GetAll(ctx context.Context, teamID uint64) ([]models.TeamMember, error) {
 
 	query := `
 		SELECT tm.id, tm.role, tm.user_id, tm.created_at, u.name FROM teammembers tm
@@ -45,7 +45,7 @@ func (tm *TeamMembersRepository) GetTeamMembers(ctx context.Context, tx pgx.Tx, 
 		WHERE team_id = $1
 	`
 
-	rows, err := tx.Query(
+	rows, err := r.db.Query(
 		ctx,
 		query,
 		teamID,
@@ -76,7 +76,7 @@ func (tm *TeamMembersRepository) GetTeamMembers(ctx context.Context, tx pgx.Tx, 
 	return members, nil
 }
 
-func (tm *TeamMembersRepository) GetTeamMemberByUserID(ctx context.Context, tx pgx.Tx, userID uint64) (models.TeamMember, error) {
+func (r *TeamMembersRepository) GetByUserID(ctx context.Context, userID uint64) (models.TeamMember, error) {
 
 	query := `
 		SELECT tm.id, tm.role, tm.user_id, tm.created_at, u.name, t.name FROM teammembers tm
@@ -87,7 +87,7 @@ func (tm *TeamMembersRepository) GetTeamMemberByUserID(ctx context.Context, tx p
 
 	var teamMember models.TeamMember
 
-	if err := tx.QueryRow(ctx, query, userID).Scan(
+	if err := r.db.QueryRow(ctx, query, userID).Scan(
 		&teamMember.ID,
 		&teamMember.Role,
 		&teamMember.UserID,

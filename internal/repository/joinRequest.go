@@ -13,7 +13,7 @@ type JoinRequestRepository struct {
 	db *pgxpool.Pool
 }
 
-func (repository *JoinRequestRepository) Create(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.JoinRequest, error) {
+func (r *JoinRequestRepository) Create(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.JoinRequest, error) {
 
 	query := `
 		INSERT INTO teamjoinrequests (team_id, team_owner_id, sender_id, status)
@@ -37,7 +37,7 @@ func (repository *JoinRequestRepository) Create(ctx context.Context, tx pgx.Tx, 
 	return joinRequest, nil
 }
 
-func (repository *JoinRequestRepository) GetAll(ctx context.Context, tx pgx.Tx, teamID uint64) ([]models.JoinRequest, error) {
+func (r *JoinRequestRepository) GetAll(ctx context.Context, teamID uint64) ([]models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -45,7 +45,7 @@ func (repository *JoinRequestRepository) GetAll(ctx context.Context, tx pgx.Tx, 
 		WHERE team_id = $1
 	`
 
-	rows, err := tx.Query(ctx, query, teamID)
+	rows, err := r.db.Query(ctx, query, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (repository *JoinRequestRepository) GetAll(ctx context.Context, tx pgx.Tx, 
 	return requests, nil
 }
 
-func (repository *JoinRequestRepository) GetByID(ctx context.Context, tx pgx.Tx, joinRequestID, teamID uint64) (models.JoinRequest, error) {
+func (r *JoinRequestRepository) GetByID(ctx context.Context, joinRequestID, teamID uint64) (models.JoinRequest, error) {
 
 	query := `
 		SELECT 	id, team_id, team_owner_id, sender_id, status, decision_at, decision_by 
@@ -84,7 +84,7 @@ func (repository *JoinRequestRepository) GetByID(ctx context.Context, tx pgx.Tx,
 
 	var request models.JoinRequest
 
-	if err := tx.QueryRow(
+	if err := r.db.QueryRow(
 		ctx,
 		query,
 		joinRequestID,
@@ -107,7 +107,7 @@ func (repository *JoinRequestRepository) GetByID(ctx context.Context, tx pgx.Tx,
 	return request, nil
 }
 
-func (repository *JoinRequestRepository) Delete(ctx context.Context, tx pgx.Tx, requestID, teamID uint64) (uint64, error) {
+func (r *JoinRequestRepository) Delete(ctx context.Context, tx pgx.Tx, requestID, teamID uint64) (uint64, error) {
 
 	query := `
 		DELETE FROM teamjoinrequests
@@ -127,7 +127,7 @@ func (repository *JoinRequestRepository) Delete(ctx context.Context, tx pgx.Tx, 
 
 }
 
-func (repository *JoinRequestRepository) Accept(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
+func (r *JoinRequestRepository) Accept(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
 	query := `
 		UPDATE teamjoinrequests SET status = 1, decision_at = NOW(), decision_by = $1 WHERE id = $2 AND team_id = $3
 	`
@@ -144,7 +144,7 @@ func (repository *JoinRequestRepository) Accept(ctx context.Context, tx pgx.Tx, 
 	return uint64(result.RowsAffected()), nil
 }
 
-func (repository *JoinRequestRepository) Reject(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
+func (r *JoinRequestRepository) Reject(ctx context.Context, tx pgx.Tx, userID, teamID, joinRequestID uint64) (uint64, error) {
 	query := `
 		UPDATE teamjoinrequests SET status = 2, decision_at = NOW(), decision_by = $1 WHERE id = $2 AND team_id = $3
 	`

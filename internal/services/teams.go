@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -61,7 +60,7 @@ func (s *Teams) GetAll(ctx context.Context) ([]models.Team, error) {
 	}
 	defer tx.Rollback(ctx)
 
-	teams, err := s.repo.Teams.GetAll(ctx, tx)
+	teams, err := s.repo.Teams.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +80,7 @@ func (ts *Teams) GetByID(ctx context.Context, teamID uint64) (models.Team, error
 	}
 	defer tx.Rollback(ctx)
 
-	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, teamID)
 	if err != nil {
 		return models.Team{}, err
 	}
@@ -121,7 +120,7 @@ func (ts *Teams) DeleteTeam(ctx context.Context, requestUserID, teamID uint64) (
 	}
 	defer tx.Rollback(ctx)
 
-	if err := ts.CompareUserIDWithTeamOwnerID(ctx, tx, requestUserID, teamID); err != nil {
+	if err := ts.CompareUserIDWithTeamOwnerID(ctx, requestUserID, teamID); err != nil {
 		return 0, err
 	}
 
@@ -145,7 +144,7 @@ func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, err
 	}
 	defer tx.Rollback(ctx)
 
-	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -153,9 +152,9 @@ func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, err
 	return team.OwnerID, nil
 }
 
-func (ts *Teams) CompareUserIDWithTeamOwnerID(ctx context.Context, tx pgx.Tx, userID, teamID uint64) error {
+func (ts *Teams) CompareUserIDWithTeamOwnerID(ctx context.Context, userID, teamID uint64) error {
 
-	team, err := ts.repo.Teams.GetByID(ctx, tx, teamID)
+	team, err := ts.repo.Teams.GetByID(ctx, teamID)
 	if err != nil {
 		return err
 	}

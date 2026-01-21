@@ -14,13 +14,9 @@ type TeamMembers struct {
 	db   *pgxpool.Pool
 }
 
-func NewTeamMembersServices(db *pgxpool.Pool) *TeamMembers {
-	return &TeamMembers{db: db}
-}
+func (s *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRole, teamID, userID uint64) (models.TeamMember, error) {
 
-func (tms *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRole, teamID, userID uint64) (models.TeamMember, error) {
-
-	tx, err := tms.db.Begin(ctx)
+	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return models.TeamMember{}, err
 	}
@@ -32,7 +28,7 @@ func (tms *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRol
 		UserID: userID,
 	}
 
-	teamMember, err = tms.repo.TeamsMembers.Create(ctx, tx, teamMember)
+	teamMember, err = s.repo.TeamMembers.Create(ctx, tx, teamMember)
 	if err != nil {
 		return models.TeamMember{}, err
 	}
@@ -44,9 +40,9 @@ func (tms *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRol
 	return teamMember, nil
 }
 
-func (tms *TeamMembers) GetTeamMembers(ctx context.Context, teamID uint64) ([]models.TeamMember, error) {
+func (s *TeamMembers) GetAll(ctx context.Context, teamID uint64) ([]models.TeamMember, error) {
 
-	teamMembers, err := tms.repo.TeamsMembers.GetAll(ctx)
+	teamMembers, err := s.repo.TeamMembers.GetAll(ctx, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +50,9 @@ func (tms *TeamMembers) GetTeamMembers(ctx context.Context, teamID uint64) ([]mo
 	return teamMembers, nil
 }
 
-func (tms *TeamMembers) GetTeamMemberByUserID(ctx context.Context, userID uint64) (models.TeamMember, error) {
+func (s *TeamMembers) GetByUserID(ctx context.Context, userID uint64) (models.TeamMember, error) {
 
-	teamMember, err := tms.repo.TeamsMembers.GetByID(ctx, userID)
+	teamMember, err := s.repo.TeamMembers.GetByUserID(ctx, userID)
 	if err != nil {
 		return models.TeamMember{}, err
 	}

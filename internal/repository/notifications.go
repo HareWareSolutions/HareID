@@ -14,7 +14,7 @@ type NotificationRepository struct {
 	db *pgxpool.Pool
 }
 
-func (repository *NotificationRepository) CreateByJoinRequest(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.Notification, error) {
+func (r *NotificationRepository) CreateByJoinRequest(ctx context.Context, tx pgx.Tx, joinRequest models.JoinRequest) (models.Notification, error) {
 
 	notification := models.Notification{
 		SenderID:    joinRequest.SenderID,
@@ -48,7 +48,7 @@ func (repository *NotificationRepository) CreateByJoinRequest(ctx context.Contex
 	return notification, nil
 }
 
-func (repository *NotificationRepository) GetAll(ctx context.Context, tx pgx.Tx, userID uint64) ([]models.Notification, error) {
+func (r *NotificationRepository) GetAll(ctx context.Context, userID uint64) ([]models.Notification, error) {
 
 	query := `
 		SELECT id, sender_id, receiver_id, type, reference_id, seen, created_at
@@ -56,7 +56,7 @@ func (repository *NotificationRepository) GetAll(ctx context.Context, tx pgx.Tx,
 		WHERE receiver_id = $1
 	`
 
-	rows, err := tx.Query(ctx, query, userID)
+	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (repository *NotificationRepository) GetAll(ctx context.Context, tx pgx.Tx,
 	return notifications, nil
 }
 
-func (repository *NotificationRepository) GetByID(ctx context.Context, tx pgx.Tx, userID, notificationID uint64) (models.Notification, error) {
+func (r *NotificationRepository) GetByID(ctx context.Context, userID, notificationID uint64) (models.Notification, error) {
 
 	query := `
 		SELECT id, sender_id, receiver_id, type, reference_id, seen, created_at
@@ -100,7 +100,7 @@ func (repository *NotificationRepository) GetByID(ctx context.Context, tx pgx.Tx
 
 	var notification models.Notification
 
-	if err := tx.QueryRow(
+	if err := r.db.QueryRow(
 		ctx,
 		query,
 		notificationID,
@@ -123,7 +123,7 @@ func (repository *NotificationRepository) GetByID(ctx context.Context, tx pgx.Tx
 	return notification, nil
 }
 
-func (repository *NotificationRepository) Delete(ctx context.Context, tx pgx.Tx, userID, notificationID uint64) (uint64, error) {
+func (r *NotificationRepository) Delete(ctx context.Context, tx pgx.Tx, userID, notificationID uint64) (uint64, error) {
 	query := `
 		DELETE FROM notifications
 		WHERE id = $1 AND receiver_id = $2

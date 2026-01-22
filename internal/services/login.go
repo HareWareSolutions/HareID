@@ -8,12 +8,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Login struct {
+type LoginServices struct {
 	repo repository.Repository
 	db   *pgxpool.Pool
 }
 
-func (ls *Login) Login(ctx context.Context, googleSubscription string) (string, error) {
+func (ls *LoginServices) Login(ctx context.Context, googleSubscription string) (string, error) {
 
 	user, err := ls.repo.Users.GetByGoogleSubscription(ctx, googleSubscription)
 	if err != nil {

@@ -10,12 +10,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Teams struct {
+type TeamServices struct {
 	repo repository.Repository
 	db   *pgxpool.Pool
 }
 
-func (s *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error) {
+func (s *TeamServices) Create(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error) {
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *Teams) CreateTeam(ctx context.Context, requestUserID uint64, team model
 	return team, models.TeamMember{}, nil
 }
 
-func (s *Teams) GetAll(ctx context.Context) ([]models.Team, error) {
+func (s *TeamServices) GetAll(ctx context.Context) ([]models.Team, error) {
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *Teams) GetAll(ctx context.Context) ([]models.Team, error) {
 	return teams, nil
 }
 
-func (ts *Teams) GetByID(ctx context.Context, teamID uint64) (models.Team, error) {
+func (ts *TeamServices) GetByID(ctx context.Context, teamID uint64) (models.Team, error) {
 
 	tx, err := ts.db.Begin(ctx)
 	if err != nil {
@@ -88,7 +88,22 @@ func (ts *Teams) GetByID(ctx context.Context, teamID uint64) (models.Team, error
 	return team, nil
 }
 
-func (ts *Teams) UpdateTeam(ctx context.Context, requestUserID, teamID uint64, team models.Team) (uint64, error) {
+func (ts *TeamServices) GetByOwnerID(ctx context.Context, userID uint64) (models.Team, error) {
+	tx, err := ts.db.Begin(ctx)
+	if err != nil {
+		return models.Team{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	team, err := ts.repo.Teams.SearchByOwnerID(ctx, userID)
+	if err != nil {
+		return models.Team{}, err
+	}
+
+	return team, nil
+}
+
+func (ts *TeamServices) Update(ctx context.Context, teamID, requestUserID uint64, team models.Team) (uint64, error) {
 
 	tx, err := ts.db.Begin(ctx)
 	if err != nil {
@@ -112,7 +127,7 @@ func (ts *Teams) UpdateTeam(ctx context.Context, requestUserID, teamID uint64, t
 	return affectedRows, nil
 }
 
-func (ts *Teams) DeleteTeam(ctx context.Context, requestUserID, teamID uint64) (uint64, error) {
+func (ts *TeamServices) Delete(ctx context.Context, teamID, requestUserID uint64) (uint64, error) {
 
 	tx, err := ts.db.Begin(ctx)
 	if err != nil {
@@ -136,7 +151,7 @@ func (ts *Teams) DeleteTeam(ctx context.Context, requestUserID, teamID uint64) (
 	return affectedRows, nil
 }
 
-func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, error) {
+func (ts *TeamServices) GetOwnerID(ctx context.Context, teamID uint64) (uint64, error) {
 
 	tx, err := ts.db.Begin(ctx)
 	if err != nil {
@@ -152,7 +167,7 @@ func (ts *Teams) GetTeamOwnerID(ctx context.Context, teamID uint64) (uint64, err
 	return team.OwnerID, nil
 }
 
-func (ts *Teams) CompareUserIDWithTeamOwnerID(ctx context.Context, userID, teamID uint64) error {
+func (ts *TeamServices) CompareUserIDWithTeamOwnerID(ctx context.Context, userID, teamID uint64) error {
 
 	team, err := ts.repo.Teams.GetByID(ctx, teamID)
 	if err != nil {

@@ -3,18 +3,26 @@ package services
 import (
 	"HareCRM/internal/models"
 	"HareCRM/internal/repository"
+	"HareCRM/internal/validators"
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Notifications struct {
+type NotificationServices struct {
 	repo repository.Repository
+	val  validators.Validations
 	db   *pgxpool.Pool
 }
 
-func (s *Notifications) GetAll(ctx context.Context, userID uint) ([]models.Notification, error) {
-	notifications, err := s.repo.Notifications.GetAll(ctx, uint64(userID))
+func (s *NotificationServices) GetAll(ctx context.Context, requestUserID, userID uint64) ([]models.Notification, error) {
+
+	if requestUserID != userID {
+		return nil, errors.New("you can only see your own notifications")
+	}
+
+	notifications, err := s.repo.Notifications.GetAll(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +30,11 @@ func (s *Notifications) GetAll(ctx context.Context, userID uint) ([]models.Notif
 	return notifications, nil
 }
 
-func (s *Notifications) GetByID(ctx context.Context, userID, notificationID uint64) (models.Notification, error) {
+func (s *NotificationServices) GetByID(ctx context.Context, requestUserID, userID, notificationID uint64) (models.Notification, error) {
+
+	if requestUserID != userID {
+		return models.Notification{}, errors.New("you can only see your own notifications")
+	}
 
 	notification, err := s.repo.Notifications.GetByID(ctx, userID, notificationID)
 	if err != nil {
@@ -32,7 +44,11 @@ func (s *Notifications) GetByID(ctx context.Context, userID, notificationID uint
 	return notification, nil
 }
 
-func (s *Notifications) Delete(ctx context.Context, userID, notificationID uint64) (uint64, error) {
+func (s *NotificationServices) Delete(ctx context.Context, requestUserID, userID, notificationID uint64) (uint64, error) {
+
+	if requestUserID != userID {
+		return 0, errors.New("you can only delete your own notifications")
+	}
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {

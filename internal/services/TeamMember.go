@@ -4,17 +4,19 @@ import (
 	"HareCRM/internal/enums"
 	"HareCRM/internal/models"
 	"HareCRM/internal/repository"
+	"HareCRM/internal/validators"
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type TeamMembers struct {
+type TeamMembersServices struct {
 	repo repository.Repository
+	val  validators.Validations
 	db   *pgxpool.Pool
 }
 
-func (s *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRole, teamID, userID uint64) (models.TeamMember, error) {
+func (s *TeamMembersServices) Create(ctx context.Context, role enums.TeamRole, teamID, userID uint64) (models.TeamMember, error) {
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -40,7 +42,7 @@ func (s *TeamMembers) CreateTeamMember(ctx context.Context, role enums.TeamRole,
 	return teamMember, nil
 }
 
-func (s *TeamMembers) GetAll(ctx context.Context, teamID uint64) ([]models.TeamMember, error) {
+func (s *TeamMembersServices) GetAll(ctx context.Context, teamID uint64) ([]models.TeamMember, error) {
 
 	teamMembers, err := s.repo.TeamMembers.GetAll(ctx, teamID)
 	if err != nil {
@@ -50,7 +52,7 @@ func (s *TeamMembers) GetAll(ctx context.Context, teamID uint64) ([]models.TeamM
 	return teamMembers, nil
 }
 
-func (s *TeamMembers) GetByUserID(ctx context.Context, userID uint64) (models.TeamMember, error) {
+func (s *TeamMembersServices) GetByUserID(ctx context.Context, userID uint64) (models.TeamMember, error) {
 
 	teamMember, err := s.repo.TeamMembers.GetByUserID(ctx, userID)
 	if err != nil {

@@ -1,8 +1,10 @@
 package validators
 
 import (
+	"HareCRM/internal/models"
 	"HareCRM/internal/repository"
 	"context"
+	"slices"
 )
 
 type TeamMemberValidations struct {
@@ -10,5 +12,14 @@ type TeamMemberValidations struct {
 }
 
 func (v *TeamMemberValidations) IsTeamMember(ctx context.Context, userID, teamID uint64) (bool, error) {
-	return true, nil
+	members, err := v.repo.TeamMembers.GetAll(ctx, teamID)
+	if err != nil {
+		return false, err
+	}
+
+	result := slices.ContainsFunc(members, func(member models.TeamMember) bool {
+		return member.UserID == userID
+	})
+
+	return result, nil
 }

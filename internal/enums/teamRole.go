@@ -11,4 +11,5 @@ const (
 	SDR
 	SUPPORT
 	DATA_ANALYST
+	MEMBER
 )

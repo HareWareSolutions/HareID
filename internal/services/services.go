@@ -1,8 +1,10 @@
 package services
 
 import (
+	"HareCRM/internal/enums"
 	"HareCRM/internal/models"
 	"HareCRM/internal/repository"
+	"HareCRM/internal/validators"
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,10 +21,43 @@ type Services struct {
 		Update(ctx context.Context, userID, requestUserID uint64, user models.User) (uint64, error)
 		Delete(ctx context.Context, userID, requestUserID uint64) (uint64, error)
 	}
+	Teams interface {
+		Create(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error)
+		GetAll(ctx context.Context) ([]models.Team, error)
+		GetByID(ctx context.Context, teamID uint64) (models.Team, error)
+		GetByOwnerID(ctx context.Context, userID uint64) (models.Team, error)
+		Update(ctx context.Context, teamID, requestUserID uint64, team models.Team) (uint64, error)
+		Delete(ctx context.Context, teamID, requestUserID uint64) (uint64, error)
+		GetOwnerID(ctx context.Context, teamID uint64) (uint64, error)
+		CompareUserIDWithTeamOwnerID(ctx context.Context, userID, teamID uint64) error
+	}
+	TeamMembers interface {
+		Create(ctx context.Context, role enums.TeamRole, teamID, userID uint64) (models.TeamMember, error)
+		GetAll(ctx context.Context, teamID uint64) ([]models.TeamMember, error)
+		GetByUserID(ctx context.Context, userID uint64) (models.TeamMember, error)
+	}
+	JoinRequests interface {
+		Create(ctx context.Context, requestUserID, teamID uint64) (models.JoinRequest, models.Notification, error)
+		GetAll(ctx context.Context, requestUserID, teamID uint64) ([]models.JoinRequest, error)
+		GetByID(ctx context.Context, requestUserID, teamID, requestID uint64) (models.JoinRequest, error)
+		Delete(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error)
+		Accept(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error)
+		Reject(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error)
+	}
+	Notifications interface {
+		GetAll(ctx context.Context, requestUserID, userID uint64) ([]models.Notification, error)
+		GetByID(ctx context.Context, requestUserID, userID, notificationID uint64) (models.Notification, error)
+		Delete(ctx context.Context, requestUserID, userID, notificationID uint64) (uint64, error)
+	}
 }
 
-func NewServices(repository repository.Repository, db *pgxpool.Pool) Services {
+func NewServices(r repository.Repository, v validators.Validations, db *pgxpool.Pool) Services {
 	return Services{
-		Users: &UserServices{repository, db},
+		Login:         &LoginServices{repo: r, db: db},
+		Users:         &UserServices{repo: r, db: db},
+		Teams:         &TeamServices{repo: r, db: db},
+		TeamMembers:   &TeamMembersServices{repo: r, db: db, val: v},
+		JoinRequests:  &JoinRequestServices{repo: r, db: db, val: v},
+		Notifications: &NotificationServices{repo: r, db: db, val: v},
 	}
 }

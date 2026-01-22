@@ -191,7 +191,7 @@ func (j *JoinRequestsController) Accept(w http.ResponseWriter, r *http.Request) 
 
 	createdTeamMember, err := j.services.TeamMembers.Create(
 		r.Context(),
-		enums.MEMBER,
+		enums.MARKETING_MEMBER,
 		teamID,
 		joinRequestData.SenderID,
 	)

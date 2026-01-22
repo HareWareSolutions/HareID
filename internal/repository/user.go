@@ -15,8 +15,8 @@ type UserRepository struct {
 
 func (r UserRepository) Create(ctx context.Context, tx pgx.Tx, user models.User) (models.User, error) {
 	query := `
-		INSERT INTO users (google_sub, name, cpf_cnpj, auth_provider, consent_terms, data_consent)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO users (google_sub, name, cpf_cnpj, stripe_customer_id, auth_provider, consent_terms, data_consent)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id, create_date
 	`
 
@@ -24,6 +24,7 @@ func (r UserRepository) Create(ctx context.Context, tx pgx.Tx, user models.User)
 		user.GoogleSub,
 		user.Name,
 		user.CpfCnpj,
+		user.StripeCustomerID,
 		user.AuthProvider,
 		user.ConsentTerms,
 		user.DataConsent,
@@ -38,7 +39,7 @@ func (r UserRepository) Create(ctx context.Context, tx pgx.Tx, user models.User)
 
 func (r UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	query := `
-		SELECT id, name, cpf_cnpj FROM users
+		SELECT id, name, cpf_cnpj, stripe_customer_id FROM users
 	`
 
 	rows, err := r.db.Query(ctx, query)
@@ -52,7 +53,7 @@ func (r UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	for rows.Next() {
 		var user models.User
 
-		err := rows.Scan(&user.ID, &user.Name, &user.CpfCnpj)
+		err := rows.Scan(&user.ID, &user.Name, &user.CpfCnpj, &user.StripeCustomerID)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ func (r UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 func (r UserRepository) GetByGoogleSubscription(ctx context.Context, googleSubscription string) (models.User, error) {
 
 	query := `
-		SELECT id, google_sub,name, cpf_cnpj, auth_provider, consent_terms, data_consent, create_date
+		SELECT id, google_sub,name, cpf_cnpj, stripe_customer_id, auth_provider, consent_terms, data_consent, create_date
 		FROM users
 		WHERE google_sub = $1
 	`
@@ -76,6 +77,7 @@ func (r UserRepository) GetByGoogleSubscription(ctx context.Context, googleSubsc
 		&user.ID,
 		&user.Name,
 		&user.CpfCnpj,
+		&user.StripeCustomerID,
 		&user.AuthProvider,
 		&user.ConsentTerms,
 		&user.DataConsent,
@@ -94,7 +96,7 @@ func (r UserRepository) GetByGoogleSubscription(ctx context.Context, googleSubsc
 
 func (r UserRepository) GetByID(ctx context.Context, userID uint64) (models.User, error) {
 	query := `
-		SELECT id, name, cpf_cnpj, auth_provider, consent_terms, data_consent, create_date
+		SELECT id, name, cpf_cnpj, stripe_customer_id, auth_provider, consent_terms, data_consent, create_date
 		FROM users
 		WHERE id = $1
 	`
@@ -105,6 +107,7 @@ func (r UserRepository) GetByID(ctx context.Context, userID uint64) (models.User
 		&user.ID,
 		&user.Name,
 		&user.CpfCnpj,
+		&user.StripeCustomerID,
 		&user.AuthProvider,
 		&user.ConsentTerms,
 		&user.DataConsent,

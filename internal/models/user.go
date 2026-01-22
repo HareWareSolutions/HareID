@@ -13,11 +13,12 @@ type User struct {
 	Name      string `json:"name,omitempty"`
 	CpfCnpj   string `json:"cpf_cnpj, omnitempty"`
 	// Provedor Autenticação - Google - Senha
-	AuthProvider enums.AuthProvider `json:"auth_provider, omitempty"`
-	ConsentTerms bool               `json:consent_termns,omitempty`
-	DataConsent  time.Time          `json:"data_consent,omitempty"`
-	CreateDate   time.Time          `json:"create_date,omitempty"`
-	UpdateDate   time.Time          `json:"update_date,omitempty"`
+	StripeCustomerID string             `json:"stripe_customer_id, omitempty"`
+	AuthProvider     enums.AuthProvider `json:"auth_provider, omitempty"`
+	ConsentTerms     bool               `json:consent_termns,omitempty`
+	DataConsent      time.Time          `json:"data_consent,omitempty"`
+	CreateDate       time.Time          `json:"create_date,omitempty"`
+	UpdateDate       time.Time          `json:"update_date,omitempty"`
 }
 
 // Valida os dados do usuário

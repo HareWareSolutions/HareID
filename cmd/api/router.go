@@ -1,8 +1,8 @@
 package main
 
 import (
-	"HareCRM/internal/controllers"
-	"HareCRM/internal/middleware"
+	"HareID/internal/controllers"
+	"HareID/internal/middleware"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

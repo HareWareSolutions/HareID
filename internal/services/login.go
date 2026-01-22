@@ -1,8 +1,8 @@
 package services
 
 import (
-	"HareCRM/internal/authentication"
-	"HareCRM/internal/repository"
+	"HareID/internal/authentication"
+	"HareID/internal/repository"
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"

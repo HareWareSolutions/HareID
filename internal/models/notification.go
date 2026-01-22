@@ -1,7 +1,7 @@
 package models
 
 import (
-	"HareCRM/internal/enums"
+	"HareID/internal/enums"
 
 	"github.com/lib/pq"
 )

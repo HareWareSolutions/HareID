@@ -1,9 +1,9 @@
 package services
 
 import (
-	"HareCRM/internal/models"
-	"HareCRM/internal/repository"
-	"HareCRM/internal/validators"
+	"HareID/internal/models"
+	"HareID/internal/repository"
+	"HareID/internal/validators"
 	"context"
 	"errors"
 

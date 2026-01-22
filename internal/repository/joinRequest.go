@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"HareCRM/internal/models"
+	"HareID/internal/models"
 	"context"
 	"errors"
 

@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"HareCRM/internal/enums"
-	"HareCRM/internal/middleware"
-	"HareCRM/internal/responses"
-	"HareCRM/internal/services"
+	"HareID/internal/enums"
+	"HareID/internal/middleware"
+	"HareID/internal/responses"
+	"HareID/internal/services"
 	"errors"
 	"net/http"
 	"strconv"

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"HareCRM/config"
-	"HareCRM/internal/controllers"
-	"HareCRM/internal/db"
-	"HareCRM/internal/repository"
-	"HareCRM/internal/services"
-	"HareCRM/internal/validators"
+	"HareID/config"
+	"HareID/internal/controllers"
+	"HareID/internal/db"
+	"HareID/internal/repository"
+	"HareID/internal/services"
+	"HareID/internal/validators"
 	"log"
 	"time"
 )

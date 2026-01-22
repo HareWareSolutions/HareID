@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ConnectionString = ""
+	ConnectionString = "postgresql://postgres:hareware@123!*@db.kbempgnpdabnxuriajrq.supabase.co:5432/postgres"
 
 	SUPABASE_URL = ""
 	SUPABASE_KEY = ""
@@ -21,7 +21,7 @@ var (
 func Load() {
 	var err error
 
-	if err = godotenv.Load(); err != nil {
+	if err = godotenv.Load("../../.env"); err != nil {
 		log.Fatal(err)
 	}
 

@@ -1,7 +1,7 @@
 package authentication
 
 import (
-	"HareCRM/internal/config"
+	"HareID/config"
 	"errors"
 	"fmt"
 	"net/http"

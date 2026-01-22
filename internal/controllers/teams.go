@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"HareCRM/internal/middleware"
-	"HareCRM/internal/models"
-	"HareCRM/internal/responses"
-	"HareCRM/internal/services"
+	"HareID/internal/middleware"
+	"HareID/internal/models"
+	"HareID/internal/responses"
+	"HareID/internal/services"
 	"encoding/json"
 	"errors"
 	"log"

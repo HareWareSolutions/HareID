@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"HareCRM/internal/enums"
+	"HareID/internal/enums"
 )
 
 type TeamMember struct {

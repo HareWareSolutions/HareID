@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"HareCRM/internal/middleware"
-	"HareCRM/internal/responses"
-	"HareCRM/internal/services"
+	"HareID/internal/middleware"
+	"HareID/internal/responses"
+	"HareID/internal/services"
 	"errors"
 	"net/http"
 	"strconv"

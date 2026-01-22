@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"HareCRM/internal/enums"
-	"HareCRM/internal/models"
+	"HareID/internal/enums"
+	"HareID/internal/models"
 	"context"
 	"errors"
 

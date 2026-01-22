@@ -1,7 +1,7 @@
 package validators
 
 import (
-	"HareCRM/internal/repository"
+	"HareID/internal/repository"
 	"context"
 )
 

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"HareCRM/internal/config"
+	"HareID/config"
 	"context"
 	"fmt"
 	"log"

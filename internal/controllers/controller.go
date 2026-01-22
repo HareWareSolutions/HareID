@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"HareCRM/internal/services"
+	"HareID/internal/services"
 	"net/http"
 )
 
@@ -47,8 +47,8 @@ type Controller struct {
 	}
 }
 
-func NewControllers(s services.Services) *Controller {
-	return &Controller{
+func NewControllers(s services.Services) Controller {
+	return Controller{
 		Login:         &LoginController{services: s},
 		Users:         &UsersController{services: s},
 		Teams:         &TeamsController{services: s},

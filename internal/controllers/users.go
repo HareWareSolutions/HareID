@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"HareCRM/internal/models"
-	"HareCRM/internal/responses"
-	"HareCRM/internal/services"
+	"HareID/internal/models"
+	"HareID/internal/responses"
+	"HareID/internal/services"
 	"encoding/json"
 	"errors"
 	"net/http"

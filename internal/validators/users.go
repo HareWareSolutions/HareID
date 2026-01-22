@@ -1,6 +1,6 @@
 package validators
 
-import "HareCRM/internal/repository"
+import "HareID/internal/repository"
 
 type UserValidations struct {
 	repo repository.Repository

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"HareCRM/internal/repository"
-	"HareCRM/internal/services"
+	"HareID/internal/repository"
+	"HareID/internal/services"
 	"log"
 	"net/http"
 	"time"

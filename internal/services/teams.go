@@ -1,9 +1,9 @@
 package services
 
 import (
-	"HareCRM/internal/enums"
-	"HareCRM/internal/models"
-	"HareCRM/internal/repository"
+	"HareID/internal/enums"
+	"HareID/internal/models"
+	"HareID/internal/repository"
 	"context"
 	"errors"
 

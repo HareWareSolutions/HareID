@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"HareCRM/internal/authentication"
-	"HareCRM/internal/responses"
+	"HareID/internal/authentication"
+	"HareID/internal/responses"
 	"context"
 	"errors"
 	"fmt"

@@ -17,6 +17,13 @@ type Controller struct {
 		Update(http.ResponseWriter, *http.Request)
 		Delete(http.ResponseWriter, *http.Request)
 	}
+	Subscriptions interface {
+		Create(http.ResponseWriter, *http.Request)
+		GetAll(http.ResponseWriter, *http.Request)
+		GetBySubscriptionID(http.ResponseWriter, *http.Request)
+		Update(http.ResponseWriter, *http.Request)
+		Delete(http.ResponseWriter, *http.Request)
+	}
 	Teams interface {
 		Create(http.ResponseWriter, *http.Request)
 		GetAll(http.ResponseWriter, *http.Request)
@@ -50,6 +57,7 @@ type Controller struct {
 func NewControllers(s services.Services) Controller {
 	return Controller{
 		Login:         &LoginController{services: s},
+		Subscriptions: &SubscriptionsController{services: s},
 		Users:         &UsersController{services: s},
 		Teams:         &TeamsController{services: s},
 		JoinRequests:  &JoinRequestsController{services: s},

@@ -17,6 +17,14 @@ type Repository struct {
 		Update(ctx context.Context, tx pgx.Tx, userID uint64, user models.User) (uint64, error)
 		Delete(ctx context.Context, tx pgx.Tx, userID uint64) (uint64, error)
 	}
+	Subscriptions interface {
+		Create(ctx context.Context, tx pgx.Tx, subscription models.Subscription) (models.Subscription, error)
+		GetAll(ctx context.Context) ([]models.Subscription, error)
+		GetBySubscriptionID(ctx context.Context, subscriptionID string) (models.Subscription, error)
+		GetByID(ctx context.Context, id uint64) (models.Subscription, error)
+		Update(ctx context.Context, tx pgx.Tx, subscriptionID string, subscription models.Subscription) (uint64, error)
+		Delete(ctx context.Context, tx pgx.Tx, subscriptionID string) (uint64, error)
+	}
 	Teams interface {
 		Create(ctx context.Context, tx pgx.Tx, team models.Team) (models.Team, error)
 		GetAll(ctx context.Context) ([]models.Team, error)
@@ -49,6 +57,7 @@ type Repository struct {
 func NewRepository(db *pgxpool.Pool) Repository {
 	return Repository{
 		Users:         &UserRepository{db: db},
+		Subscriptions: &SubscriptionRepository{db: db},
 		Teams:         &TeamsRepository{db: db},
 		TeamMembers:   &TeamMembersRepository{db: db},
 		JoinRequests:  &JoinRequestRepository{db: db},

@@ -8,6 +8,7 @@ import (
 // ID, PriceID, Status, CurrentPeriodEnd
 type Subscription struct {
 	ID               uint64                    `json:"id,omitempty"`
+	UserID           uint64                    `json:"user_id,omitempty"`
 	SubscriptionID   string                    `json:"subscription_id,omitempty"`
 	PriceID          string                    `json:"price_id,omitempty"`
 	Status           subscription.Subscription `json:"status,omitempty"`

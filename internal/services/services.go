@@ -21,6 +21,13 @@ type Services struct {
 		Update(ctx context.Context, userID, requestUserID uint64, user models.User) (uint64, error)
 		Delete(ctx context.Context, userID, requestUserID uint64) (uint64, error)
 	}
+	Subscriptions interface {
+		Create(ctx context.Context, subscription models.Subscription) (models.Subscription, error)
+		GetAll(ctx context.Context) ([]models.Subscription, error)
+		GetBySubscriptionID(ctx context.Context, subscriptionID string) (models.Subscription, error)
+		Update(ctx context.Context, subscriptionID string, subscription models.Subscription) (uint64, error)
+		Delete(ctx context.Context, subscriptionID string) (uint64, error)
+	}
 	Teams interface {
 		Create(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error)
 		GetAll(ctx context.Context) ([]models.Team, error)
@@ -55,6 +62,7 @@ func NewServices(r repository.Repository, v validators.Validations, db *pgxpool.
 	return Services{
 		Login:         &LoginServices{repo: r, db: db},
 		Users:         &UserServices{repo: r, db: db},
+		Subscriptions: &SubscriptionServices{repo: r, db: db},
 		Teams:         &TeamServices{repo: r, db: db},
 		TeamMembers:   &TeamMembersServices{repo: r, db: db, val: v},
 		JoinRequests:  &JoinRequestServices{repo: r, db: db, val: v},

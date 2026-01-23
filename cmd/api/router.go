@@ -31,6 +31,13 @@ func createRouter(controllers controllers.Controller) http.Handler {
 
 	router.Get("/users/{user_id}/teams", controllers.Users.GetUserTeam)
 
+	//Rotas de Subscriptions
+	router.Post("/subscriptions", middleware.Authenticate(controllers.Subscriptions.Create))
+	router.Get("/subscriptions", middleware.Authenticate(controllers.Subscriptions.GetAll))
+	router.Get("/subscriptions/{subscription_id}", middleware.Authenticate(controllers.Subscriptions.GetBySubscriptionID))
+	router.Patch("/subscriptions/{subscription_id}", middleware.Authenticate(controllers.Subscriptions.Update))
+	router.Delete("/subscriptions/{subscription_id}", middleware.Authenticate(controllers.Subscriptions.Delete))
+
 	//Rotas de teams
 	router.Post("/teams", middleware.Authenticate(controllers.Teams.Create))
 	router.Get("/teams", middleware.Authenticate(controllers.Teams.GetAll))

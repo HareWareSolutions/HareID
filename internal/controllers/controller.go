@@ -52,6 +52,12 @@ type Controller struct {
 		GetByID(http.ResponseWriter, *http.Request)
 		Delete(http.ResponseWriter, *http.Request)
 	}
+	Webhook interface {
+		HandleWebhook(http.ResponseWriter, *http.Request)
+	}
+	Checkout interface {
+		CreateSession(http.ResponseWriter, *http.Request)
+	}
 }
 
 func NewControllers(s services.Services) Controller {
@@ -62,5 +68,7 @@ func NewControllers(s services.Services) Controller {
 		Teams:         &TeamsController{services: s},
 		JoinRequests:  &JoinRequestsController{services: s},
 		Notifications: &NotificationsController{},
+		Webhook:       &WebhookController{services: s},
+		Checkout:      &CheckoutController{services: s},
 	}
 }

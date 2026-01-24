@@ -18,6 +18,7 @@ type Services struct {
 		Create(ctx context.Context, user models.User) (models.User, error)
 		GetAll(ctx context.Context) ([]models.User, error)
 		GetByID(ctx context.Context, userID uint64) (models.User, error)
+		GetByStripeCustomerID(ctx context.Context, stripeCustomerID string) (models.User, error)
 		Update(ctx context.Context, userID, requestUserID uint64, user models.User) (uint64, error)
 		Delete(ctx context.Context, userID, requestUserID uint64) (uint64, error)
 	}
@@ -27,6 +28,7 @@ type Services struct {
 		GetBySubscriptionID(ctx context.Context, subscriptionID string) (models.Subscription, error)
 		Update(ctx context.Context, subscriptionID string, subscription models.Subscription) (uint64, error)
 		Delete(ctx context.Context, subscriptionID string) (uint64, error)
+		UpsertSubscription(ctx context.Context, subscription models.Subscription) error
 	}
 	Teams interface {
 		Create(ctx context.Context, requestUserID uint64, team models.Team) (models.Team, models.TeamMember, error)
@@ -56,6 +58,9 @@ type Services struct {
 		GetByID(ctx context.Context, requestUserID, userID, notificationID uint64) (models.Notification, error)
 		Delete(ctx context.Context, requestUserID, userID, notificationID uint64) (uint64, error)
 	}
+	Checkout interface {
+		CreateCheckoutSession(ctx context.Context, userID uint64, priceID, successURL, cancelURL string) (string, error)
+	}
 }
 
 func NewServices(r repository.Repository, v validators.Validations, db *pgxpool.Pool) Services {
@@ -67,5 +72,6 @@ func NewServices(r repository.Repository, v validators.Validations, db *pgxpool.
 		TeamMembers:   &TeamMembersServices{repo: r, db: db, val: v},
 		JoinRequests:  &JoinRequestServices{repo: r, db: db, val: v},
 		Notifications: &NotificationServices{repo: r, db: db, val: v},
+		Checkout:      &CheckoutServices{},
 	}
 }

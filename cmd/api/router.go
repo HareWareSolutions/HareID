@@ -22,6 +22,7 @@ func createRouter(controllers controllers.Controller) http.Handler {
 	})
 
 	//Rotas de usuários
+	router.Post("/webhook", controllers.Webhook.HandleWebhook)
 	router.Post("/login", controllers.Login.Login)
 	router.Post("/users", controllers.Users.Create)
 	router.Get("/users", middleware.Authenticate(controllers.Users.GetAll))
@@ -32,6 +33,7 @@ func createRouter(controllers controllers.Controller) http.Handler {
 	router.Get("/users/{user_id}/teams", controllers.Users.GetUserTeam)
 
 	//Rotas de Subscriptions
+	router.Post("/checkout-session", middleware.Authenticate(controllers.Checkout.CreateSession))
 	router.Post("/subscriptions", middleware.Authenticate(controllers.Subscriptions.Create))
 	router.Get("/subscriptions", middleware.Authenticate(controllers.Subscriptions.GetAll))
 	router.Get("/subscriptions/{subscription_id}", middleware.Authenticate(controllers.Subscriptions.GetBySubscriptionID))

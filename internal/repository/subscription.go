@@ -38,7 +38,7 @@ func (r SubscriptionRepository) Create(ctx context.Context, tx pgx.Tx, subscript
 
 func (r SubscriptionRepository) GetAll(ctx context.Context) ([]models.Subscription, error) {
 	query := `
-		SELECT id, user_id, subscription_id, price_id, status, current_preriod_end FROM subscriptions
+		SELECT id, user_id, subscription_id, price_id, status, current_period_end FROM subscriptions
 	`
 
 	rows, err := r.db.Query(ctx, query)
@@ -64,7 +64,7 @@ func (r SubscriptionRepository) GetAll(ctx context.Context) ([]models.Subscripti
 
 func (r SubscriptionRepository) GetBySubscriptionID(ctx context.Context, subscriptionID string) (models.Subscription, error) {
 	query := `
-		SELECT id, user_id, subscription_id, price_id, status, current_preriod_end FROM subscriptions
+		SELECT id, user_id, subscription_id, price_id, status, current_period_end FROM subscriptions
 		WHERE subscription_id = $1
 	`
 

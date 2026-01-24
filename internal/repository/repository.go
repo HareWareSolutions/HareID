@@ -14,6 +14,7 @@ type Repository struct {
 		GetAll(ctx context.Context) ([]models.User, error)
 		GetByGoogleSubscription(ctx context.Context, googleSubscription string) (models.User, error)
 		GetByID(ctx context.Context, userID uint64) (models.User, error)
+		GetByStripeCustomerID(ctx context.Context, stripeCustomerID string) (models.User, error)
 		Update(ctx context.Context, tx pgx.Tx, userID uint64, user models.User) (uint64, error)
 		Delete(ctx context.Context, tx pgx.Tx, userID uint64) (uint64, error)
 	}

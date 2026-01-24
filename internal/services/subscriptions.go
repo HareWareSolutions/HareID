@@ -90,3 +90,17 @@ func (s *SubscriptionServices) Delete(ctx context.Context, subscriptionID string
 
 	return affectedRows, nil
 }
+
+func (s *SubscriptionServices) UpsertSubscription(ctx context.Context, subscription models.Subscription) error {
+	// Tenta buscar a assinatura existente
+	existing, err := s.repo.Subscriptions.GetBySubscriptionID(ctx, subscription.SubscriptionID)
+	if err == nil {
+		// Se existir, atualiza
+		_, err := s.Update(ctx, existing.SubscriptionID, subscription)
+		return err
+	}
+
+	// Se não existir, cria uma nova
+	_, err = s.Create(ctx, subscription)
+	return err
+}

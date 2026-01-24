@@ -94,6 +94,36 @@ func (r UserRepository) GetByGoogleSubscription(ctx context.Context, googleSubsc
 	return user, nil
 }
 
+func (r UserRepository) GetByStripeCustomerID(ctx context.Context, stripeCustomerID string) (models.User, error) {
+	query := `
+		SELECT id, name, cpf_cnpj, stripe_customer_id, auth_provider, consent_terms, data_consent, create_date
+		FROM users
+		WHERE stripe_customer_id = $1
+	`
+
+	var user models.User
+
+	err := r.db.QueryRow(ctx, query, stripeCustomerID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.CpfCnpj,
+		&user.StripeCustomerID,
+		&user.AuthProvider,
+		&user.ConsentTerms,
+		&user.DataConsent,
+		&user.CreateDate,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return models.User{}, errors.New("user not found")
+		}
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 func (r UserRepository) GetByID(ctx context.Context, userID uint64) (models.User, error) {
 	query := `
 		SELECT id, name, cpf_cnpj, stripe_customer_id, auth_provider, consent_terms, data_consent, create_date
@@ -128,11 +158,11 @@ func (r UserRepository) Update(ctx context.Context, tx pgx.Tx, userID uint64, us
 
 	query := `
 		UPDATE users
-		SET name = $1, cpf_cnpj = $2, update_date = NOW()
-		WHERE id = $3
+		SET name = $1, cpf_cnpj = $2, stripe_customer_id = $3, update_date = NOW()
+		WHERE id = $4
 	`
 
-	result, err := tx.Exec(ctx, query, user.Name, user.CpfCnpj, userID)
+	result, err := tx.Exec(ctx, query, user.Name, user.CpfCnpj, user.StripeCustomerID, userID)
 	if err != nil {
 		return 0, err
 	}

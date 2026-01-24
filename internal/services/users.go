@@ -56,6 +56,16 @@ func (s *UserServices) GetByID(ctx context.Context, userID uint64) (models.User,
 	return user, nil
 }
 
+func (s *UserServices) GetByStripeCustomerID(ctx context.Context, stripeCustomerID string) (models.User, error) {
+
+	user, err := s.repo.Users.GetByStripeCustomerID(ctx, stripeCustomerID)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 func (s *UserServices) Update(ctx context.Context, userID, requestUserID uint64, user models.User) (uint64, error) {
 
 	tx, err := s.db.Begin(ctx)

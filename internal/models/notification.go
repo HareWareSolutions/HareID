@@ -16,5 +16,5 @@ type Notification struct {
 	Type        enums.NotificationType `json:"notification_type,omitempty"`
 	ReferenceID uint64                 `json:"reference_id,omitempty"`
 	Seen        bool                   `json:"seen,omitempty"`
-	CreatedAt   pq.NullTime            `json:"created_at,omitempty"`
+	CreatedAt   pq.NullTime            `json:"created_at,omitempty" swaggertype:"string" format:"date-time"`
 }

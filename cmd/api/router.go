@@ -7,6 +7,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+
+	_ "HareID/docs"
 )
 
 func createRouter(controllers controllers.Controller) http.Handler {
@@ -62,6 +65,11 @@ func createRouter(controllers controllers.Controller) http.Handler {
 	router.Get("/users/{user_id}/notifications", middleware.Authenticate(controllers.Notifications.GetAll))
 	router.Get("/users/{user_id}/notifications/{notification_id}", middleware.Authenticate(controllers.Notifications.GetByID))
 	router.Delete("/users/{user_id}/notifications/{notification_id}", middleware.Authenticate(controllers.Notifications.Delete))
+
+	// Swagger
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	handler := cors.Handler(router)
 

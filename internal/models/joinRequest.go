@@ -12,6 +12,6 @@ type JoinRequest struct {
 	TeamOwnerID uint64       `json:"team_owner_id,omitempty"`
 	SenderID    uint64       `json:"sender_id,omitempty"`
 	Status      enums.Status `json:"status"`
-	DecisionAt  pq.NullTime  `json:"decision_at"`
+	DecisionAt  pq.NullTime  `json:"decision_at" swaggertype:"string" format:"date-time"`
 	DecisionBy  *uint64      `json:"decision_by,omitempty"`
 }

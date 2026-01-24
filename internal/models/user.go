@@ -9,13 +9,13 @@ import (
 
 type User struct {
 	ID        uint64 `json:"id,omitempty"`
-	GoogleSub string `json:"google_sub, omitempty"`
+	GoogleSub string `json:"google_sub,omitempty"`
 	Name      string `json:"name,omitempty"`
-	CpfCnpj   string `json:"cpf_cnpj, omnitempty"`
+	CpfCnpj   string `json:"cpf_cnpj,omitempty"`
 	// Provedor Autenticação - Google - Senha
-	StripeCustomerID string             `json:"stripe_customer_id, omitempty"`
-	AuthProvider     enums.AuthProvider `json:"auth_provider, omitempty"`
-	ConsentTerms     bool               `json:consent_termns,omitempty`
+	StripeCustomerID string             `json:"stripe_customer_id,omitempty"`
+	AuthProvider     enums.AuthProvider `json:"auth_provider,omitempty"`
+	ConsentTerms     bool               `json:"consent_terms,omitempty"`
 	DataConsent      time.Time          `json:"data_consent,omitempty"`
 	CreateDate       time.Time          `json:"create_date,omitempty"`
 	UpdateDate       time.Time          `json:"update_date,omitempty"`

@@ -13,6 +13,19 @@ type NotificationsController struct {
 	services services.Services
 }
 
+// GetAll retrieves all notifications for a user
+// @Summary      Get user notifications
+// @Description  Retrieve a list of all notifications for a specific user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        user_id  path      int  true  "User ID"
+// @Success      200      {array}   models.Notification
+// @Failure      400      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /users/{user_id}/notifications [get]
 func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	requestUserIDString, ok := r.Context().Value(middleware.UserKey).(string)
@@ -47,6 +60,20 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 	responses.JSON(w, http.StatusOK, notifications)
 }
 
+// GetByID retrieves a specific notification
+// @Summary      Get notification by ID
+// @Description  Retrieve details of a specific notification
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        user_id          path      int  true  "User ID"
+// @Param        notification_id  path      int  true  "Notification ID"
+// @Success      200              {object}  models.Notification
+// @Failure      400              {object}  map[string]string
+// @Failure      401              {object}  map[string]string
+// @Failure      500              {object}  map[string]string
+// @Router       /users/{user_id}/notifications/{notification_id} [get]
 func (c *NotificationsController) GetByID(w http.ResponseWriter, r *http.Request) {
 	requestUserIDString, ok := r.Context().Value(middleware.UserKey).(string)
 	if !ok {
@@ -82,6 +109,20 @@ func (c *NotificationsController) GetByID(w http.ResponseWriter, r *http.Request
 	responses.JSON(w, http.StatusOK, notifications)
 }
 
+// Delete removes a notification
+// @Summary      Delete notification
+// @Description  Remove a notification from the system
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        user_id          path      int  true  "User ID"
+// @Param        notification_id  path      int  true  "Notification ID"
+// @Success      200              {object}  map[string]int
+// @Failure      400              {object}  map[string]string
+// @Failure      401              {object}  map[string]string
+// @Failure      500              {object}  map[string]string
+// @Router       /users/{user_id}/notifications/{notification_id} [delete]
 func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request) {
 	requestUserIDString, ok := r.Context().Value(middleware.UserKey).(string)
 	if !ok {

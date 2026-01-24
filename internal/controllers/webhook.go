@@ -21,6 +21,17 @@ type WebhookController struct {
 	services services.Services
 }
 
+// HandleWebhook processes Stripe webhook events
+// @Summary      Stripe Webhook
+// @Description  Receive and process Stripe webhook events (e.g. checkout completed, subscription updated)
+// @Tags         webhook
+// @Accept       json
+// @Produce      json
+// @Param        Stripe-Signature header string true "Stripe Signature"
+// @Success      200  {string}  string "OK"
+// @Failure      400  {string}  string "Bad Request"
+// @Failure      503  {string}  string "Service Unavailable"
+// @Router       /webhook [post]
 func (c *WebhookController) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	const MaxBodyBytes = int64(65536)
 	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)

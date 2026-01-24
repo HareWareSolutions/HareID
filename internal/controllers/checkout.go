@@ -20,6 +20,19 @@ type CreateCheckoutRequest struct {
 	CancelURL  string `json:"cancel_url"`
 }
 
+// CreateSession initiates a checkout session
+// @Summary      Create checkout session
+// @Description  Create a Stripe checkout session for subscription
+// @Tags         checkout
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request  body      CreateCheckoutRequest  true  "Checkout Request Data"
+// @Success      200      {object}  map[string]string
+// @Failure      400      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /checkout-session [post]
 func (c *CheckoutController) CreateSession(w http.ResponseWriter, r *http.Request) {
 	requestUserID, err := authentication.GetTokenUserID(r)
 	if err != nil {

@@ -1,0 +1,1357 @@
+basePath: /
+definitions:
+  controllers.CreateCheckoutRequest:
+    properties:
+      cancel_url:
+        type: string
+      price_id:
+        type: string
+      success_url:
+        type: string
+    type: object
+  enums.AuthProvider:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - GOOGLE
+    - PASSWORD
+  enums.NotificationType:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - JOIN_REQUEST
+    - NOTIFICATION
+  enums.Status:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - PENDING
+    - APPROVED
+    - REJECTED
+  enums.TeamRole:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    type: integer
+    x-enum-varnames:
+    - UNKNOWN
+    - OWNER
+    - ADMIN
+    - MANAGER
+    - SALES_REP
+    - SDR
+    - SUPPORT
+    - DATA_ANALYST
+    - MARKETING_MEMBER
+  models.JoinRequest:
+    properties:
+      decision_at:
+        format: date-time
+        type: string
+      decision_by:
+        type: integer
+      id:
+        type: integer
+      sender_id:
+        type: integer
+      status:
+        $ref: '#/definitions/enums.Status'
+      team_id:
+        type: integer
+      team_owner_id:
+        type: integer
+    type: object
+  models.Notification:
+    properties:
+      created_at:
+        format: date-time
+        type: string
+      id:
+        type: integer
+      notification_type:
+        $ref: '#/definitions/enums.NotificationType'
+      receiver_id:
+        type: integer
+      reference_id:
+        type: integer
+      seen:
+        type: boolean
+      sender_id:
+        type: integer
+    type: object
+  models.Subscription:
+    properties:
+      current_period_end:
+        type: string
+      id:
+        type: integer
+      price_id:
+        type: string
+      status:
+        $ref: '#/definitions/subscription.Subscription'
+      subscription_id:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Team:
+    properties:
+      created_at:
+        type: string
+      domain:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      owner_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.TeamMember:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/enums.TeamRole'
+      team_id:
+        type: integer
+      team_name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      auth_provider:
+        $ref: '#/definitions/enums.AuthProvider'
+      consent_terms:
+        type: boolean
+      cpf_cnpj:
+        type: string
+      create_date:
+        type: string
+      data_consent:
+        type: string
+      google_sub:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      stripe_customer_id:
+        description: Provedor Autenticação - Google - Senha
+        type: string
+      update_date:
+        type: string
+    type: object
+  subscription.Subscription:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    type: integer
+    x-enum-varnames:
+    - UNKNOWN
+    - ACTIVE
+    - INACTIVE
+    - CANCELED
+    - PAST_DUE
+    - UNPAID
+    - TRIALING
+    - INCOMPLETE
+    - INCOMPLETE_EXPIRED
+    - OPEN
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API service for HareID application.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: HareID API
+  version: "1.0"
+paths:
+  /checkout-session:
+    post:
+      consumes:
+      - application/json
+      description: Create a Stripe checkout session for subscription
+      parameters:
+      - description: Checkout Request Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CreateCheckoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create checkout session
+      tags:
+      - checkout
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user using Google Subject ID and return a JWT token
+      parameters:
+      - description: User Credentials (only GoogleSub needed)
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User Login
+      tags:
+      - auth
+  /subscriptions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all subscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Subscription'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all subscriptions
+      tags:
+      - subscriptions
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription
+      parameters:
+      - description: Subscription Data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Subscription'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create subscription
+      tags:
+      - subscriptions
+  /subscriptions/{subscription_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a subscription from the system
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete subscription
+      tags:
+      - subscriptions
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get subscription by ID
+      tags:
+      - subscriptions
+    patch:
+      consumes:
+      - application/json
+      description: Update details of an existing subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: string
+      - description: Subscription Update Data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update subscription
+      tags:
+      - subscriptions
+  /teams:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all teams
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Found
+          schema:
+            items:
+              $ref: '#/definitions/models.Team'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all teams
+      tags:
+      - teams
+    post:
+      consumes:
+      - application/json
+      description: Create a new team for the authenticated user and add them as owner
+      parameters:
+      - description: Team Creation Data
+        in: body
+        name: team
+        required: true
+        schema:
+          $ref: '#/definitions/models.Team'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new team
+      tags:
+      - teams
+  /teams/{team_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a team from the system
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete team
+      tags:
+      - teams
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Found
+          schema:
+            $ref: '#/definitions/models.Team'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get team by ID
+      tags:
+      - teams
+    patch:
+      consumes:
+      - application/json
+      description: Update details of an existing team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Team Update Data
+        in: body
+        name: team
+        required: true
+        schema:
+          $ref: '#/definitions/models.Team'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update team
+      tags:
+      - teams
+  /teams/{team_id}/join:
+    post:
+      consumes:
+      - application/json
+      description: Create a join request for a specific team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Request to join team
+      tags:
+      - join-requests
+  /teams/{team_id}/join-requests:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all join requests for a specific team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JoinRequest'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get team join requests
+      tags:
+      - join-requests
+  /teams/{team_id}/join-requests/{request_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel or delete a join request
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete join request
+      tags:
+      - join-requests
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific join request
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JoinRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get join request
+      tags:
+      - join-requests
+  /teams/{team_id}/join-requests/{request_id}/accept:
+    patch:
+      consumes:
+      - application/json
+      description: Approve a user's request to join a team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Accept join request
+      tags:
+      - join-requests
+  /teams/{team_id}/join-requests/{request_id}/reject:
+    patch:
+      consumes:
+      - application/json
+      description: Deny a user's request to join a team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reject join request
+      tags:
+      - join-requests
+  /teams/{team_id}/members:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all members in a specific team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TeamMember'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get team members
+      tags:
+      - teams
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all registered users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Register a new user in the system
+      parameters:
+      - description: User Registration Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new user
+      tags:
+      - users
+  /users/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a user from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Update details of an existing user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: User Update Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /users/{user_id}/notifications:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all notifications for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Notification'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user notifications
+      tags:
+      - notifications
+  /users/{user_id}/notifications/{notification_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a notification from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Notification ID
+        in: path
+        name: notification_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete notification
+      tags:
+      - notifications
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific notification
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Notification ID
+        in: path
+        name: notification_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get notification by ID
+      tags:
+      - notifications
+  /users/{user_id}/teams:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the team information for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TeamMember'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user's team
+      tags:
+      - users
+  /webhook:
+    post:
+      consumes:
+      - application/json
+      description: Receive and process Stripe webhook events (e.g. checkout completed,
+        subscription updated)
+      parameters:
+      - description: Stripe Signature
+        in: header
+        name: Stripe-Signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "503":
+          description: Service Unavailable
+          schema:
+            type: string
+      summary: Stripe Webhook
+      tags:
+      - webhook
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

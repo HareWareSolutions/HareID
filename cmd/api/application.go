@@ -38,6 +38,7 @@ func (app *application) run(r *http.Handler) error {
 	}
 
 	log.Printf("application started at port: %s", app.config.api_port)
+	log.Printf("Swagger UI: http://localhost%s/swagger/index.html", app.config.api_port)
 
 	if err := server.ListenAndServe(); err != nil {
 		return err

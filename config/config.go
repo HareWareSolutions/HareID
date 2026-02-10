@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ConnectionString = "postgresql://postgres:hareware@123!*@db.kbempgnpdabnxuriajrq.supabase.co:5432/postgres"
+	ConnectionString = "postgresql://postgres:HareID%402026@db.ntwrmljarfqmgulcsmpy.supabase.co:5432/postgres"
 
 	SUPABASE_URL = ""
 	SUPABASE_KEY = ""

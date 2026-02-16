@@ -67,32 +67,35 @@ func (s *UserServices) GetByStripeCustomerID(ctx context.Context, stripeCustomer
 }
 
 func (s *UserServices) Update(ctx context.Context, userID, requestUserID uint64, user models.User) (uint64, error) {
-
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Rollback(ctx)
 
 	if userID != requestUserID {
+		tx.Rollback(ctx)
 		return 0, errors.New("Only the owner can update the user")
 	}
 
 	if err := user.ValidateUser("update"); err != nil {
+		tx.Rollback(ctx)
 		return 0, err
 	}
 
 	affectedRows, err := s.repo.Users.Update(ctx, tx, userID, user)
 	if err != nil {
+		tx.Rollback(ctx)
 		return 0, err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
+		tx.Rollback(ctx)
 		return 0, err
 	}
 
 	return affectedRows, nil
 }
+
 
 func (s *UserServices) Delete(ctx context.Context, userID, requestUserID uint64) (uint64, error) {
 	tx, err := s.db.Begin(ctx)

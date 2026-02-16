@@ -75,6 +75,7 @@ func (r UserRepository) GetByGoogleSubscription(ctx context.Context, googleSubsc
 
 	err := r.db.QueryRow(ctx, query, googleSubscription).Scan(
 		&user.ID,
+		&user.GoogleSub,
 		&user.Name,
 		&user.CpfCnpj,
 		&user.StripeCustomerID,

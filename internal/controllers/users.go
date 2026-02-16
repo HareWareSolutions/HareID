@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"HareID/internal/middleware"
 	"HareID/internal/models"
 	"HareID/internal/responses"
 	"HareID/internal/services"
@@ -137,15 +138,15 @@ func (c *UsersController) GetUserTeam(w http.ResponseWriter, r *http.Request) {
 // @Router       /users/{user_id} [patch]
 func (c *UsersController) Update(w http.ResponseWriter, r *http.Request) {
 
-	requestUserIDString, ok := r.Context().Value("user_id").(string)
+	userIDToken, ok := r.Context().Value(middleware.UserKey).(string)
 	if !ok {
 		responses.Error(w, http.StatusUnauthorized, errors.New("UserKey not found in the request"))
 		return
 	}
 
-	requestUserID, err := strconv.ParseUint(requestUserIDString, 10, 64)
+	requestUserID, err := strconv.ParseUint(userIDToken, 10, 64)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, err)
+		responses.Error(w, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -189,15 +190,15 @@ func (c *UsersController) Update(w http.ResponseWriter, r *http.Request) {
 // @Router       /users/{user_id} [delete]
 func (c *UsersController) Delete(w http.ResponseWriter, r *http.Request) {
 
-	requestUserIDString, ok := r.Context().Value("user_id").(string)
+	userIDToken, ok := r.Context().Value(middleware.UserKey).(string)
 	if !ok {
 		responses.Error(w, http.StatusUnauthorized, errors.New("UserKey not found in the request"))
 		return
 	}
 
-	requestUserID, err := strconv.ParseUint(requestUserIDString, 10, 64)
+	requestUserID, err := strconv.ParseUint(userIDToken, 10, 64)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, err)
+		responses.Error(w, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -214,7 +215,7 @@ func (c *UsersController) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]uint64{
-		"affectedRows": affectedRows,
+		"affected_rows": affectedRows,
 	}
 
 	responses.JSON(w, http.StatusOK, data)

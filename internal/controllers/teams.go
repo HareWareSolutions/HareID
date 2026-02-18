@@ -195,7 +195,7 @@ func (c *TeamsController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	affectedRows, err := c.services.Teams.Update(r.Context(), requestUserID, teamID, team)
+	affectedRows, err := c.services.Teams.Update(r.Context(), teamID, requestUserID, team)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
@@ -241,7 +241,7 @@ func (c *TeamsController) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	affectedRows, err := c.services.Teams.Delete(r.Context(), requestUserID, teamID)
+	affectedRows, err := c.services.Teams.Delete(r.Context(), teamID, requestUserID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return

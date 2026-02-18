@@ -131,7 +131,7 @@ func (ts *TeamServices) Delete(ctx context.Context, teamID, requestUserID uint64
 
 	tx, err := ts.db.Begin(ctx)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 	defer tx.Rollback(ctx)
 

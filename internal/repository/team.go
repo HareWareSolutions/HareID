@@ -81,6 +81,7 @@ func (r *TeamsRepository) GetByID(ctx context.Context, teamID uint64) (models.Te
 	err := r.db.QueryRow(ctx, query, teamID).Scan(
 		&team.ID,
 		&team.Name,
+		&team.Domain,
 		&team.OwnerID,
 		&team.CreatedAt,
 		&team.UpdatedAt,
@@ -132,7 +133,7 @@ func (r *TeamsRepository) Update(ctx context.Context, tx pgx.Tx, teamID uint64, 
 
 	result, err := tx.Exec(ctx, query, team.Name, team.Domain, teamID)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	if result.RowsAffected() == 0 {
@@ -151,7 +152,7 @@ func (r *TeamsRepository) Delete(ctx context.Context, tx pgx.Tx, teamID uint64) 
 
 	result, err := tx.Exec(ctx, query, teamID)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	if result.RowsAffected() == 0 {

@@ -123,7 +123,7 @@ func (r SubscriptionRepository) Update(ctx context.Context, tx pgx.Tx, subscript
 		WHERE subscription_id = $4
 	`
 
-	result, err := tx.Exec(ctx, query, subscription.PriceID, subscription.Status, subscription.CurrentPeriodEnd)
+	result, err := tx.Exec(ctx, query, subscription.PriceID, subscription.Status, subscription.CurrentPeriodEnd, subscriptionID)
 	if err != nil {
 		return 0, err
 	}
@@ -139,7 +139,7 @@ func (r SubscriptionRepository) Delete(ctx context.Context, tx pgx.Tx, subscript
 
 	query := `
 		DELETE FROM subscriptions
-		WHERE id = $1
+		WHERE subscription_id = $1
 	`
 
 	result, err := tx.Exec(ctx, query, subscriptionID)

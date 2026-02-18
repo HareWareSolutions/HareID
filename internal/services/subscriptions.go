@@ -4,6 +4,7 @@ import (
 	"HareID/internal/models"
 	"HareID/internal/repository"
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -14,6 +15,10 @@ type SubscriptionServices struct {
 }
 
 func (s *SubscriptionServices) Create(ctx context.Context, subscription models.Subscription) (models.Subscription, error) {
+	if subscription.SubscriptionID == "" {
+		return models.Subscription{}, errors.New("subscription_id is required")
+	}
+	
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return models.Subscription{}, err

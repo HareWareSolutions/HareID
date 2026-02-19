@@ -18,7 +18,7 @@ type JoinRequestServices struct {
 	db   *pgxpool.Pool
 }
 
-// Serviço para criar um novo pedido de entrada em um time
+// Criar um novo pedido de entrada
 func (s *JoinRequestServices) Create(ctx context.Context, requestUserID, teamID uint64) (models.JoinRequest, models.Notification, error) {
 
 	tx, err := s.db.Begin(ctx)
@@ -37,7 +37,7 @@ func (s *JoinRequestServices) Create(ctx context.Context, requestUserID, teamID 
 		SenderID:    requestUserID,
 		TeamID:      teamID,
 		TeamOwnerID: team.OwnerID,
-		Status:      enums.PENDING, //PENDENTE
+		Status:      enums.PENDING,
 	}
 
 	joinRequest, err = s.repo.JoinRequests.Create(ctx, tx, joinRequest)
@@ -45,9 +45,7 @@ func (s *JoinRequestServices) Create(ctx context.Context, requestUserID, teamID 
 		log.Println(err)
 		return models.JoinRequest{}, models.Notification{}, err
 	}
-
-	//log.Println("created join request: ", joinRequest)
-
+	
 	createdNotification, err := s.repo.Notifications.CreateByJoinRequest(ctx, tx, joinRequest)
 	if err != nil {
 		return models.JoinRequest{}, models.Notification{}, err
@@ -58,33 +56,34 @@ func (s *JoinRequestServices) Create(ctx context.Context, requestUserID, teamID 
 	}
 
 	return joinRequest, createdNotification, nil
-
 }
 
-// Serviço para buscar todos os pedidos de entrada de um time
+// Buscar todos os pedidos de um time
 func (s *JoinRequestServices) GetAll(ctx context.Context, requestUserID, teamID uint64) ([]models.JoinRequest, error) {
-
-	ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, teamID)
-	if err != nil {
-		return nil, err
-	}
-
-	if !ok {
-		return nil, errors.New("you dont have permission to see the team join requests")
-	}
 
 	requests, err := s.repo.JoinRequests.GetAll(ctx, teamID)
 	if err != nil {
 		return nil, err
 	}
 
+	// valida permissão para cada join request
+	for _, r := range requests {
+		ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, r.ID, teamID)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, errors.New("you dont have permission to see the team join requests")
+		}
+	}
+
 	return requests, nil
 }
 
-// Serviço para buscar um pedido de entrada de um time pelo ID do pedido
+// Buscar um pedido específico pelo ID
 func (s *JoinRequestServices) GetByID(ctx context.Context, requestUserID, teamID, requestID uint64) (models.JoinRequest, error) {
 
-	ok, err := s.val.JoinRequest.CanSee(ctx, requestID, teamID)
+	ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, requestID, teamID)
 	if err != nil {
 		return models.JoinRequest{}, err
 	}
@@ -101,7 +100,7 @@ func (s *JoinRequestServices) GetByID(ctx context.Context, requestUserID, teamID
 	return request, nil
 }
 
-// Serviço para deletar um pedido de entrada de um time pelo ID do pedido
+// Deletar um pedido
 func (s *JoinRequestServices) Delete(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -109,7 +108,7 @@ func (s *JoinRequestServices) Delete(ctx context.Context, requestUserID, teamID,
 	}
 	defer tx.Rollback(ctx)
 
-	ok, err := s.val.JoinRequest.CanSee(ctx, requestID, teamID)
+	ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, requestID, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -130,6 +129,7 @@ func (s *JoinRequestServices) Delete(ctx context.Context, requestUserID, teamID,
 	return affectedRows, nil
 }
 
+// Aceitar um pedido
 func (s *JoinRequestServices) Accept(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -137,7 +137,7 @@ func (s *JoinRequestServices) Accept(ctx context.Context, requestUserID, teamID,
 	}
 	defer tx.Rollback(ctx)
 
-	ok, err := s.val.JoinRequest.CanSee(ctx, requestID, teamID)
+	ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, requestID, teamID)
 	if err != nil {
 		return 0, err
 	}
@@ -167,6 +167,7 @@ func (s *JoinRequestServices) Accept(ctx context.Context, requestUserID, teamID,
 	return affectedRows, nil
 }
 
+// Rejeitar um pedido
 func (s *JoinRequestServices) Reject(ctx context.Context, requestUserID, teamID, requestID uint64) (uint64, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -174,7 +175,7 @@ func (s *JoinRequestServices) Reject(ctx context.Context, requestUserID, teamID,
 	}
 	defer tx.Rollback(ctx)
 
-	ok, err := s.val.JoinRequest.CanSee(ctx, requestID, teamID)
+	ok, err := s.val.JoinRequest.CanSee(ctx, requestUserID, requestID, teamID)
 	if err != nil {
 		return 0, err
 	}

@@ -16,7 +16,7 @@ type Validations struct {
 		IsTeamMember(ctx context.Context, userID, teamID uint64) (bool, error)
 	}
 	JoinRequest interface {
-		CanSee(ctx context.Context, requestUserID, teamID uint64) (bool, error)
+		CanSee(ctx context.Context, requestUserID, requestID, teamID uint64) (bool, error)
 	}
 }
 

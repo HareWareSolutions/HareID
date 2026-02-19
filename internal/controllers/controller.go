@@ -67,7 +67,7 @@ func NewControllers(s services.Services) Controller {
 		Users:         &UsersController{services: s},
 		Teams:         &TeamsController{services: s},
 		JoinRequests:  &JoinRequestsController{services: s},
-		Notifications: &NotificationsController{},
+		Notifications: &NotificationsController{services: s},
 		Webhook:       &WebhookController{services: s},
 		Checkout:      &CheckoutController{services: s},
 	}

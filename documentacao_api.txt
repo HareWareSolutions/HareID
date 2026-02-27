@@ -1,0 +1,221 @@
+DOCUMENTAÇÃO DA API HAREID
+
+Bem-vindo à documentação oficial da API do HareID. Este guia tem como objetivo ensinar como consumir os endpoints disponíveis no sistema.
+
+A aplicação base processa requisições em http://localhost:8080 (conforme configurado por padrão), e você precisa incluir um cabeçalho de autorização JWT na maioria das chamadas, no formato "Authorization: Bearer <SEU_TOKEN>".
+
+Dica: O projeto também já possui um Swagger configurado. Você pode acessá-lo rodando a aplicação e entrando na rota /swagger/.
+
+--------------------------------------------------------------------------------
+
+ÍNDICE
+1. Autenticação
+2. Usuários (Users)
+3. Equipes (Teams)
+4. Membros da Equipe
+5. Solicitações de Entrada (Join Requests)
+6. Assinaturas e Checkout (Subscriptions)
+7. Notificações (Notifications)
+8. Webhooks
+
+--------------------------------------------------------------------------------
+
+1. AUTENTICAÇÃO
+
+Para consumir a maioria das rotas do sistema, você precisa se autenticar e obter um Token JWT.
+
+Fazer Login
+Endpoint: POST /login
+Autenticação: Não necessária
+Descrição: Autentica o usuário (ex: usando google_sub ou credenciais) e retorna o token JWT.
+
+Exemplo de body JSON:
+{
+  "google_sub": "1234567890",
+  "auth_provider": 0
+}
+
+--------------------------------------------------------------------------------
+
+2. USUÁRIOS (USERS)
+
+Rotas focadas na gestão de usuários do sistema de identidade. As rotas que contêm (Auth) exigem o envio do Header "Authorization: Bearer <TOKEN>".
+
+Criar Usuário
+Endpoint: POST /users
+Autenticação: Não necessária
+
+Exemplo de Requisição no cURL:
+curl -X POST http://localhost:8080/users \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "Jane Doe",
+           "cpf_cnpj": "000.000.000-00",
+           "consent_terms": true
+         }'
+
+Listar Usuários
+Endpoint: GET /users
+Autenticação: Obrigatória (Auth)
+
+Obter Usuário Específico
+Endpoint: GET /users/{user_id}
+Autenticação: Obrigatória (Auth)
+
+Atualizar Usuário
+Endpoint: PATCH /users/{user_id}
+Autenticação: Obrigatória (Auth)
+
+Excluir Usuário
+Endpoint: DELETE /users/{user_id}
+Autenticação: Obrigatória (Auth)
+
+Obter as Equipes do Usuário
+Endpoint: GET /users/{user_id}/teams
+Autenticação: Opcional/Depende da regra de acesso, mas recomendado.
+
+--------------------------------------------------------------------------------
+
+3. EQUIPES (TEAMS)
+
+Rotas focadas na criação e gerenciamento de equipes.
+
+Criar Equipe
+Endpoint: POST /teams
+Autenticação: Obrigatória (Auth)
+Descrição: Cria uma nova equipe e define quem criou como Owner (Dono).
+
+Exemplo de Requisição no cURL:
+curl -X POST http://localhost:8080/teams \
+     -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "Minha Equipe Nova",
+           "domain": "minhaequipe.com"
+         }'
+
+Listar Todas as Equipes
+Endpoint: GET /teams
+Autenticação: Obrigatória (Auth)
+
+Obter Detalhes de uma Equipe
+Endpoint: GET /teams/{team_id}
+Autenticação: Obrigatória (Auth)
+
+Editar Equipe
+Endpoint: PATCH /teams/{team_id}
+Autenticação: Obrigatória (Auth)
+
+Excluir Equipe
+Endpoint: DELETE /teams/{team_id}
+Autenticação: Obrigatória (Auth)
+
+--------------------------------------------------------------------------------
+
+4. MEMBROS DA EQUIPE
+
+Obter/Listar Membros de uma Equipe Específica
+Endpoint: GET /teams/{team_id}/members
+Autenticação: Obrigatória (Auth)
+Descrição: Retorna todos os usuários associados a esta organização (team_id) e seus respectivos papéis (ex: ADMIN, MANAGER, DEV, etc).
+
+--------------------------------------------------------------------------------
+
+5. SOLICITAÇÕES DE ENTRADA (JOIN REQUESTS)
+
+Um usuário pode solicitar acesso a uma equipe e o dono da equipe deverá aceitar ou rejeitar.
+
+Solicitar Acesso a uma Equipe
+Endpoint: POST /teams/{team_id}/join
+Autenticação: Obrigatória (Auth)
+Descrição: O usuário autenticado pede para entrar na equipe passada na URL.
+
+Listar Recebimentos de Solicitações (Para Donos/Admins)
+Endpoint: GET /teams/{team_id}/join-requests
+Autenticação: Obrigatória (Auth)
+
+Consultar uma Solicitação Específica
+Endpoint: GET /teams/{team_id}/join-requests/{request_id}
+Autenticação: Obrigatória (Auth)
+
+Cancelar ou Excluir uma Solicitação
+Endpoint: DELETE /teams/{team_id}/join-requests/{request_id}
+Autenticação: Obrigatória (Auth)
+
+Aceitar uma Solicitação
+Endpoint: PATCH /teams/{team_id}/join-requests/{request_id}/accept
+Autenticação: Obrigatória (Auth)
+
+Rejeitar uma Solicitação
+Endpoint: PATCH /teams/{team_id}/join-requests/{request_id}/reject
+Autenticação: Obrigatória (Auth)
+
+Exemplo de Resposta (Aceitar e Rejeitar):
+Normalmente retorna um Status 200 OK informando que o novo membro foi aceito e agora faz parte da equipa (para o accept).
+
+--------------------------------------------------------------------------------
+
+6. ASSINATURAS E CHECKOUT (SUBSCRIPTIONS)
+
+Para lidar com os pagamentos que dão acesso ao sistema pro.
+
+Criar Sessão de Checkout (Stripe, etc.)
+Endpoint: POST /checkout-session
+Autenticação: Obrigatória (Auth)
+
+Exemplo de Requisição no cURL:
+curl -X POST http://localhost:8080/checkout-session \
+     -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "price_id": "price_1XYZ2XYZ3XYZ...",
+           "success_url": "http://localhost:4200/success",
+           "cancel_url": "http://localhost:4200/cancel"
+         }'
+
+Criar Registro Interno de Assinatura
+Endpoint: POST /subscriptions
+Autenticação: Obrigatória (Auth)
+
+Listar Todas as Assinaturas
+Endpoint: GET /subscriptions
+Autenticação: Obrigatória (Auth)
+
+Consultar Detalhes da Assinatura
+Endpoint: GET /subscriptions/{subscription_id}
+Autenticação: Obrigatória (Auth)
+
+Atualizar Registro da Assinatura
+Endpoint: PATCH /subscriptions/{subscription_id}
+Autenticação: Obrigatória (Auth)
+
+Deletar / Cancelar Assinatura
+Endpoint: DELETE /subscriptions/{subscription_id}
+Autenticação: Obrigatória (Auth)
+
+--------------------------------------------------------------------------------
+
+7. NOTIFICAÇÕES (NOTIFICATIONS)
+
+Permite as chamadas para popular os avisos internos do app (como "Seu convite foi aceito", "Nova solicitação de entrada", etc).
+
+Listar Notificações do Usuário
+Endpoint: GET /users/{user_id}/notifications
+Autenticação: Obrigatória (Auth)
+
+Visualizar Notificação Específica
+Endpoint: GET /users/{user_id}/notifications/{notification_id}
+Autenticação: Obrigatória (Auth)
+
+Excluir Notificação Específica
+Endpoint: DELETE /users/{user_id}/notifications/{notification_id}
+Autenticação: Obrigatória (Auth)
+
+--------------------------------------------------------------------------------
+
+8. WEBHOOKS
+
+Tratar Webhooks de Serviço Externo (Ex: Stripe)
+Endpoint: POST /webhook
+Autenticação: Não precisa de JWT (geralmente autenticado pela própria ferramenta externa, via headers criptográficos).
+Descrição: Rota em que plataformas e provedores de pagamentos mandam notificações e metadados quando o status transacional do cliente no Stripe muda.
